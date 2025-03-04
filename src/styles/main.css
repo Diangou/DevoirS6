@@ -1,0 +1,611 @@
+@import "./properties.css" layer(base);
+
+@import "tailwindcss";
+
+@config '../../tailwind.config.js';
+
+/*
+  The default border color has changed to `currentColor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+    *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+        border-color: var(--color-gray-200, currentColor);
+    }
+}
+
+@utility animation-pause {
+    animation-play-state: paused;
+}
+
+@utility animation-play {
+    animation-play-state: running;
+}
+
+@custom-variant hocus {
+    &:is(:hover, :focus-visible) {
+        @slot;
+    }
+}
+
+@custom-variant group-hocus {
+    &:is(:where(.group):hover *, :where(.group):focus-visible *) {
+        @slot;
+    }
+}
+
+@custom-variant touch {
+    @media (pointer: coarse) {
+        @slot;
+    }
+}
+
+@layer utilities {
+    @font-face {
+        font-family: "Open Sans";
+        src: url("/OpenSans-VariableFont_wdth,wght.ttf") format("truetype");
+        font-weight: 300 800;
+        font-style: normal;
+    }
+
+    @font-face {
+        font-family: "Open Sans";
+        src: url("/OpenSans-Italic-VariableFont_wdth,wght.ttf") format("truetype");
+        font-style: italic;
+        font-weight: 300 800;
+    }
+}
+
+@theme {
+    --duration-75: 75ms;
+    --duration-150: 150ms;
+    --duration-300: 300ms;
+    --duration-500: 500ms;
+
+    --type-plante: #3fa129;
+    --type-poison: #8f41cb;
+    --type-vol: #81b9ef;
+    --type-eau: #2980ef;
+    --type-feu: #e62829;
+    --type-normal: #9fa19f;
+    --type-insecte: #91a119;
+    --type-sol: #915121;
+    --type-tenebres: #50413f;
+    --type-sol: #915121;
+    --type-psy: #ef4179;
+    --type-electrik: #fac000;
+    --type-glace: #3fd8ff;
+    --type-combat: #ff8000;
+    --type-roche: #afa981;
+    --type-acier: #60a1b8;
+    --type-fee: #ef71ef;
+    --type-dragon: #5061e1;
+    --type-spectre: #704170;
+
+    --grid-fluid: repeat(auto-fit, minmax(0, 1fr));
+}
+
+@layer base {
+    [popover] {
+        position: fixed;
+        inset: 0;
+        width: fit-content;
+        height: fit-content;
+        margin: auto;
+    }
+}
+
+html {
+    scroll-behavior: smooth;
+    font-family: "Open Sans", Helvetica, Arial, sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-style: normal;
+    font-variation-settings: "wdth" 100;
+    scrollbar-gutter: stable;
+
+    &:has(dialog[open]) {
+        overflow: hidden;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+        animation-delay: -1ms !important;
+        animation-duration: 1ms !important;
+        animation-iteration-count: 1 !important;
+        background-attachment: initial !important;
+        scroll-behavior: auto !important;
+        transition-duration: 1ms !important;
+        transition-delay: -1ms !important;
+        view-transition-name: unset !important;
+    }
+
+    ::view-transition-group(*),
+    ::view-transition-old(*),
+    ::view-transition-new(*) {
+        animation-duration: revert-layer !important;
+        animation-name: revert !important;
+    }
+}
+
+@supports (interpolate-size: allow-keywords) {
+    :root {
+        @media (prefers-reduced-motion: no-preference) {
+            interpolate-size: allow-keywords;
+        }
+    }
+
+    details {
+        &::details-content {
+            block-size: 0;
+            overflow-y: clip;
+            transition: content-visibility 0.5s allow-discrete, block-size 0.5s;
+        }
+
+        &[open]::details-content {
+            block-size: auto;
+        }
+    }
+}
+
+.no-dimorphism {
+    background: rgb(233, 233, 233);
+    background: linear-gradient(
+        113deg,
+        var(--color-sky-300) 0%,
+        var(--color-sky-300) 44.5%,
+        var(--color-pink-300) 44.5%,
+        var(--color-pink-300) 100%
+    );
+}
+
+[inert]:not(li:has(a), dialog, .arrow, .pokemon) {
+    opacity: theme(opacity.20);
+    position: relative;
+    z-index: -10;
+}
+
+.horizontal-evolution-layout {
+    display: grid;
+    grid-template-columns: auto min-content auto;
+    align-items: center;
+    column-gap: --spacing(2);
+
+    a:has(img) {
+        width: 100%;
+    }
+}
+
+.vertical-evolution-layout {
+    display: flex;
+    flex-direction: column;
+    column-gap: --spacing(2);
+}
+
+dialog {
+    --animation-speed: 0.25s;
+    opacity: 0;
+    translate: 0 90vh;
+    color: transparent;
+    border-color: transparent;
+    transition: opacity var(--animation-speed) ease-in,
+        translate var(--animation-speed) ease-in,
+        color var(--animation-speed) ease-in,
+        scale var(--animation-speed) ease-in,
+        border-color var(--animation-speed) ease-in,
+        overlay var(--animation-speed) ease-in,
+        display var(--animation-speed) ease-in;
+    transition-behavior: allow-discrete;
+
+    &[open] {
+        opacity: 1;
+        translate: 0 0;
+    }
+
+    @starting-style {
+        &[open] {
+            opacity: 0;
+            translate: 0 90vh;
+            color: transparent;
+            border-color: transparent;
+        }
+    }
+}
+
+.pkmn-details-dialog {
+    --dot-size: 0.8px;
+    --dot-alpha: 0.45;
+    --dot-color-1: white;
+    --dot-color-2: white;
+    --background-sprite: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png";
+    --details-modal-blur: var(--blur-md);
+    --darken-bg-color: lch(from var(--bg-modal-color) calc(l - 20) c h);
+    --lighter-bg-color: lch(from var(--bg-modal-color) calc(l + 20) c h);
+
+    @media (max-resolution: 1.1dppx) {
+        --dot-alpha: 0.25;
+    }
+
+    box-shadow: 0px 0px 53px 0px;
+    background-image: radial-gradient(
+            rgb(from var(--dot-color-1) r g b / var(--dot-alpha))
+                var(--dot-size),
+            transparent var(--dot-size)
+        ),
+        radial-gradient(
+            rgb(from var(--dot-color-2) r g b / var(--dot-alpha))
+                var(--dot-size),
+            transparent var(--dot-size)
+        ),
+        linear-gradient(
+            0deg,
+            rgb(from var(--dot-color-1) r g b / 1) 0%,
+            rgb(from var(--dot-color-1) r g b / 1) 6.05%,
+            rgba(255, 255, 255, 0) 6.05%
+        );
+    background-size: 20px 20px, 20px 20px, 100% 1210px;
+    background-position: 0 0, 10px 10px, center bottom -12px;
+    background-repeat: repeat, repeat, no-repeat;
+    scrollbar-color: var(--darken-bg-color) var(--lighter-bg-color);
+    scrollbar-width: thin;
+
+    &[inert] {
+        opacity: 0.7;
+        &::backdrop {
+            backdrop-filter: blur(var(--blur-3xl));
+        }
+    }
+
+    &::backdrop {
+        transition: backdrop-filter 250ms;
+    }
+
+    .main-infos {
+        background-image: radial-gradient(
+                rgb(from var(--dot-color-1) r g b / var(--dot-alpha))
+                    var(--dot-size),
+                transparent var(--dot-size)
+            ),
+            radial-gradient(
+                rgb(from var(--dot-color-2) r g b / var(--dot-alpha))
+                    var(--dot-size),
+                #fff var(--dot-size)
+            );
+        background-size: 20px 20px, 20px 20px;
+        background-position: -17px 0, 10px 10px;
+    }
+
+    .infinite-header-bg {
+        height: 0px;
+        position: sticky;
+        &::before {
+            content: "";
+            display: block;
+            bottom: 100%;
+            background-color: inherit;
+            height: 55vh;
+            position: absolute;
+            left: 0;
+            right: 0;
+            background-image: image-set(var(--background-sprite) 1x);
+            background-repeat: space;
+            background-size: 15%;
+            background-position: center;
+        }
+    }
+}
+
+.type-name {
+    font-weight: bold;
+    color: var(--color-slate-50);
+    text-shadow: 1px 1px 2px black, 0 0 15em black, 0 0 0.1em black;
+}
+
+details {
+    --animation-speed: 0.3s;
+
+    .stat-bar {
+        border-radius: var(--radius);
+        transform: scaleX(0);
+        transition: transform 0.95s var(--animation-speed);
+        transform-origin: left center;
+    }
+    &[open] {
+        .stat-bar {
+            transform: scaleX(1);
+            transition: transform 0.95s;
+            transform-origin: left center;
+        }
+
+        @starting-style {
+            .stat-bar {
+                transform: scaleX(0);
+            }
+        }
+    }
+}
+
+.modal-footer {
+    --alpha: 0.6;
+    --animation-speed: 0.45s;
+
+    &::after,
+    &::before {
+        content: "";
+        position: absolute;
+        display: block;
+        pointer-events: none;
+        z-index: -1;
+        bottom: 0;
+        width: 100%;
+        background: var(--bg-modal-color);
+        transition: --bg-modal-color var(--animation-speed) 0.3s ease-out;
+
+        @starting-style {
+            --bg-modal-color: white;
+            background: var(--bg-modal-color);
+        }
+    }
+
+    &::after {
+        background: radial-gradient(
+            ellipse at 50% -50px,
+            rgba(255, 255, 255, 0) 80%,
+            rgb(from var(--bg-modal-color) r g b / var(--alpha)) 90%,
+            rgb(from var(--bg-modal-color) r g b / var(--alpha)) 100%
+        );
+        height: 200%;
+    }
+
+    &::before {
+        height: 90%;
+        background: linear-gradient(
+            0deg,
+            rgb(from var(--bg-modal-color) r g b / var(--alpha)) 0%,
+            rgba(255, 255, 255, 1) 95%
+        );
+        transition-delay: 0.15s;
+        background-color: var(--bg-modal-color);
+    }
+}
+
+.mega-evolution {
+    background: linear-gradient(
+        -45deg,
+        #e98b2d,
+        #80c468,
+        #09b8db,
+        #23d5ab,
+        #e35faa
+    );
+    background-size: 400% 400%;
+    animation: mega-evolution-gradient 15s ease infinite;
+}
+
+@keyframes mega-evolution-gradient {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.border-type-animated {
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+
+    animation: type-border 12s ease-in-out infinite alternate paused;
+    &:hover,
+    &:focus-visible {
+        animation-play-state: running;
+    }
+}
+
+@keyframes type-border {
+    to {
+        --border-type-angle: -34.6deg;
+    }
+}
+
+.marquee {
+    display: flex;
+    white-space: nowrap;
+    width: 100%;
+}
+
+.marquee-text {
+    text-transform: uppercase;
+    font-weight: 700;
+    animation: loop-text 5s infinite linear;
+}
+
+@keyframes loop-text {
+    from {
+        transform: translateX(0);
+    }
+
+    to {
+        transform: translateX(-100%);
+    }
+}
+
+.sparkles {
+    animation: sparkles-effect 2s linear infinite alternate both;
+}
+
+@keyframes sparkles-effect {
+    0% {
+        color: #ffd700;
+    }
+    100% {
+        color: #da9100;
+    }
+}
+
+.bar-sex-male,
+.bar-sex-female {
+    transition: width var(--duration-300),
+        border-radius var(--duration-300) var(--duration-150);
+    &::after {
+        content: "";
+        @media (width >= theme(--breakpoint-md)) {
+            content: none !important;
+        }
+        mask-size: contain;
+        position: absolute;
+        top: 0.15rem;
+        font-weight: bold;
+        width: 40px;
+        bottom: 0.15rem;
+        opacity: 0.25;
+    }
+}
+
+.bar-sex-male::after {
+    mask: url("/images/male-icon.svg") no-repeat 50% 50%;
+    left: 0;
+}
+
+.bar-sex-female::after {
+    mask: url("/images/female-icon.svg") no-repeat 50% 50%;
+    right: 0;
+}
+
+.pulldown-indicator {
+    transition-property: background-color, transform;
+}
+
+.ripple-effect {
+    --ripple-x: 0;
+    --ripple-y: 0;
+    --ripple-color: transparent;
+    --ripple-speed: 350;
+    --animation-tick: 0;
+
+    position: relative;
+
+    &::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-color: var(--color-slate-100);
+        z-index: -1;
+        box-sizing: content-box;
+        overflow: hidden;
+        border-radius: inherit;
+        opacity: 0;
+        transition-property: opacity;
+        transition-duration: var(--duration-150);
+    }
+
+    &:hover,
+    &:focus-visible {
+        &::after {
+            opacity: 1;
+        }
+    }
+
+    &.animating {
+        &::after {
+            opacity: 1;
+            background-image: paint(ripple);
+        }
+    }
+}
+
+.pikachu-loading,
+.error-banner {
+    z-index: 9999;
+    transition: translate var(--duration-500) ease-in var(--duration-75),
+        display var(--duration-500) ease-in, opacity var(--duration-300);
+    transition-behavior: allow-discrete;
+}
+
+.pikachu-loading {
+    translate: 0 110vh;
+    opacity: 0;
+
+    &:popover-open {
+        opacity: 1;
+        translate: 0 0;
+    }
+
+    @starting-style {
+        &:popover-open {
+            opacity: 0;
+            translate: 0 110vh;
+        }
+    }
+}
+
+.error-banner {
+    @starting-style {
+        translate: 0 -10vh;
+    }
+
+    &[popover]:not(:popover-open) {
+        translate: 0 -10vh;
+        display: none !important;
+        transition-duration: 0.4s;
+        transition-timing-function: ease-out;
+    }
+}
+
+@keyframes animate-in {
+    0% {
+        opacity: 0;
+        transform: translateY(100%);
+    }
+    50% {
+        opacity: 0;
+        transform: translateY(100%);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes animate-out {
+    0% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-100%);
+    }
+}
+
+.pokedex a:not([inert]) {
+    @supports (animation-range: entry, exit) {
+        @container pokemon (width >= theme(--container-xs)) {
+            will-change: transform, opacity;
+            animation: animate-in linear forwards, animate-out linear forwards;
+            animation-timeline: view();
+            animation-range: entry, exit;
+        }
+    }
+}
+
+.arrow {
+    font-family: serif;
+    transition-property: scale, color;
+    transition-duration: var(--duration-150);
+    transform-origin: center;
+}

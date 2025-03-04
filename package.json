@@ -1,0 +1,46 @@
+{
+    "name": "pokedex-ci-cd",
+    "private": true,
+    "version": "1.0.0",
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "start": "vite",
+        "test": "vitest",
+        "build": "vite build && rsync -am --include='*.php' --include='**/*.php' --exclude='*' ./ dist/",
+        "lint": "npx eslint",
+        "preview": "vite preview",
+        "e2e": "npx playwright test --ui"
+    },
+    "devDependencies": {
+        "@babel/core": "^7.26.0",
+        "@babel/preset-env": "^7.26.0",
+        "@eslint/js": "^9.16.0",
+        "@playwright/test": "^1.49.0",
+        "@tailwindcss/postcss": "^4.0.0",
+        "@types/node": "^22.10.1",
+        "eslint": "^9.16.0",
+        "globals": "^15.13.0",
+        "happy-dom": "^16.3.0",
+        "postcss": "^8.4.49",
+        "tailwindcss": "^4.0.0",
+        "vite": "^6.0.1",
+        "vite-plugin-eslint": "^1.8.1",
+        "vitest": "^2.1.8",
+        "vituum": "^1.1.1"
+    },
+    "dependencies": {
+        "axios": "^1.7.8",
+        "core-js": "^3.40.0"
+    },
+    "imports": {
+        "#src/*.js": "./src/*.js",
+        "#src/*.css": "./src/*.css",
+        "#utils": "./src/utils/index.js",
+        "#api": "./src/api/index.js",
+        "#mocks/*.js": "./__mocks__/*.js"
+    },
+    "optionalDependencies": {
+        "@rollup/rollup-linux-x64-gnu": "*"
+    }
+}

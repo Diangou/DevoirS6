@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="robots" content="noindex, nofollow">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+        <meta name="format-detection" content="telephone=no">
+        <meta name="theme-color" content="#0f172a" />
+
+        <title>Pokédex v%VERSION%</title>
+        <script type="module" src="/src/main.js"></script>
+        <link data-favicon rel="shortcut icon" href="/favicon.png" type="image/png">
+    </head>
+    <body>
+        <div role="alert" id="no-generation-banner" popover data-error-popover tabindex="-1" class="bg-amber-400 p-4 mt-11 border border-amber-800 rounded-lg mx-auto error-banner">
+            <div class="flex items-center justify-center gap-3">
+                <p data-error-message></p>
+                <button popovertarget="no-generation-banner" type="button" class="shrink-0 inline-flex justify-center w-7 h-7 items-center text-amber-900 hocus:bg-amber-800 hocus:text-gray-100 rounded-lg text-sm p-1.5 ">
+                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                    </svg>
+                    <span class="sr-only">Cacher bannière</span>
+                </button>
+            </div>
+        </div>
+        <header class="py-2 bg-slate-900 text-white">
+            <div class="mr-[max(env(safe-area-inset-right),_theme(space.3))] ml-[max(env(safe-area-inset-left),_theme(space.3))]">
+                <div class="mx-auto max-w-6xl">
+                    <h1>Pokédex v%VERSION% - TP CI/CD</h1>
+                </div>
+            </div>
+        </header>
+        <main>
+            <div class="fixed right-[max(env(safe-area-inset-right),_theme(space.3))] top-1/2 -translate-y-1/2 flex" style="z-index:  9999;">
+                <ul class="text-sm py-3 px-2 bg-slate-50 rounded-3xl opacity-0 hidden transition-opacity border border-red-600 border-solid flex-col gap-y-1.5" data-generation-shortcut></ul>
+            </div>
+
+            <div data-list-pokedex aria-busy="true" aria-live="polite"></div>
+        </main>
+        <div class="bg-transparent pikachu-loading mb-3" popover="manual" data-pikachu-loading>
+            <div class="flex flex-col gap-3 items-center ">
+                <picture>
+                    <!-- Animated version -->
+                    <source
+                        srcset="/images/pikachu-loading.gif"
+                        type="image/gif"
+                        media="(prefers-reduced-motion: no-preference)"
+                    />
+                    <!-- Static versions. -->
+                    <img src="pikachu-loading.png" class="w-16" alt="Pikachu image chargement" />
+                </picture>
+                <p class="text-xs py-0.5 px-1.5 bg-slate-900 text-white rounded-md">Chargement en cours</p>
+            </div>
+        </div>
+        <footer class="pr-[max(env(safe-area-inset-right),_theme(space.2))] pl-[max(env(safe-area-inset-left),_theme(space.2))]">
+            <button
+                data-testid="load-generation-btn"
+                data-load-generation
+                class="inert:opacity-35 block transition-colors rounded-md w-full my-4 p-2 border border-black border-solid hocus:bg-white hocus:text-black bg-slate-950 text-white"
+            >
+                Charger la génération suivante
+            </button>
+        </footer>
+
+        <template data-tpl-id="generation-shortcut-link">
+            <li>
+                <button class="px-1 py-2 hocus:scale-125 transition-transform">
+                    #1
+                </button>
+            </li>
+        </template>
+
+        <template data-tpl-id="marquee-type-text">
+            <p aria-hidden="true" class="marquee-text type-name px-1 text-sm group-hocus:animation-play animation-pause"></p>
+        </template>
+
+        <template data-tpl-id="marquee-type-container">
+            <div class="marquee py-0.5 border-b border-solid border-white"></div>
+        </template>
+
+        <template data-tpl-id="pokemon">
+            <li class="@container/pokemon">
+                <a data-pokemon-data data-pokemon-id class="pokemon ripple-effect duration-150 border-type-animated hocus:scale-105 @xs:hocus:scale-100 hocus:relative ease-out rounded-md py-2 group block border-solid border-transparent border-2 outline-offset-2 transition-transform" data-testid="pokemon">
+                    <div class="flex @xs:flex-row flex-col gap-3 items-center relative inert:opacity-50">
+                        <div class="absolute overflow-hidden inset-0 opacity-0 transition-opacity group-hocus:opacity-100 @xs:hidden h-fit" data-marquee></div>
+                        <img src="/images/loading.svg" loading="lazy" alt="" class="@xs:max-w-20 group-hocus:scale-85 transition-transform" />
+                        <p data-pkmn-name class="group-hocus:pkmn-name @xs:text-left text-center whitespace-pre w-full"></p>
+                    </div>
+                </a>
+            </li>
+        </template>
+
+        <template data-tpl-id="pokedex">
+            <header
+                data-header-pokedex
+                class="sticky -top-[1px] border-black border-b-2 bg-slate-50 p-3 z-50 pr-[max(env(safe-area-inset-right),_theme(space.3))] pl-[max(env(safe-area-inset-left),_theme(space.3))]"
+            >
+                <div class="mx-auto max-w-6xl flex justify-between">
+                    <div>
+                        <h2 class="text-3xl">
+                            Génération <span data-generation-number></span>
+                        </h2>
+                        <p
+                            data-generation-range
+                            class="py-0.5 px-2 rounded-md bg-slate-600 text-white inline-flex"
+                        ></p>
+                    </div>
+                    <div class="flex gap-y-1 gap-x-2 items-center">
+                        <svg data-icon="list" aria-label="Affichage en liste" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-7 transition-opacity">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM3.75 12h.007v.008H3.75V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm-.375 5.25h.007v.008H3.75v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+                        </svg>
+
+                        <label class="inline-flex items-center cursor-pointer col-span-2" data-testid="switch-layout">
+                            <input type="checkbox" value="" class="sr-only peer switch-checkbox" data-layout-switch>
+                            <div class="switch relative w-14 h-8 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-blue-300 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 peer-checked:after:start-[-2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-7 after:w-7 peer-checked:bg-blue-600"></div>
+                        </label>
+
+                        <svg data-icon="grid" aria-label="Affichage en grille" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" class="size-7 transition-opacity">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" />
+                        </svg>
+                    </div>
+                </div>
+            </header>
+            <div class="px-3  mr-[max(env(safe-area-inset-right),_theme(space.0))] ml-[max(env(safe-area-inset-left),_theme(space.0))]">
+                <ul
+                    class="pokedex grid grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-4 mb-4 mx-auto max-w-6xl mt-2"
+                    data-pokedex
+                    data-testid="pokedex"
+                ></ul>
+            </div>
+        </template>
+
+        <template data-tpl-id="pokemon-sensibility">
+            <li class="flex gap-3">
+                <div class="rounded-md content-center aspect-square size-12" data-type-icon>
+
+                </div>
+                <div>
+                    <p data-type class="-ml-2 py-0.5 px-2 rounded-md gap-1 flex items-center type-name w-fit">Vol</p>
+                    <p data-damage-factor>x2</p>
+                </div>
+            </li>
+        </template>
+
+        <template data-tpl-id="pokemon-highlight">
+            <span class="py-0.5 px-1.5 whitespace-nowrap bg-slate-900 text-white rounded-md text-xs align-super font-normal">Talent caché</span>
+        </template>
+
+        <template data-tpl-id="pokemon-sibling">
+            <li class="group basis-0">
+                <a href="" data-testid="" class="pkmn-sibling ripple-effect h-full group-last:flex-row-reverse flex gap-5 items-center group border-transparent transition-colors border-2 border-solid rounded-lg p-2 outline-offset-2">
+                    <img class="w-12" src="" alt="">
+                    <div>
+                        <p class="text-sm" data-id></p>
+                        <p data-name></p>
+                    </div>
+                </a>
+            </li>
+        </template>
+
+        <template data-tpl-id="pokemon-list-sprites">
+            <div class="flex flex-col items-center">
+                <p class="text-center py-0.5 px-2.5 w-fit rounded-lg">Male ♂</p>
+                    <ul
+                    class="flex flex-col gap-3 mt-2"
+                    data-list-sprites=""
+                ></ul>
+            </div>
+        </template>
+
+        <template data-tpl-id="load-generation-btn">
+            <li class="group basis-0 grow">
+                <button
+                    data-load-generation
+                    data-self-delete
+                    class="block rounded-md w-full p-2 border border-black border-solid  h-full hocus:bg-slate-100"
+                >
+                </button>
+            </li>
+        </template>
+
+        <template data-tpl-id="pokemon-sprite">
+            <li class="flex justify-center basis-1/2 md:basis-1/4 grow">
+                <div class="flex flex-col items-center group">
+                    <img class="w-52" src="/images/loading.svg" alt="" fetchpriority="low" />
+                    <p class="text-center px-2 rounded-md">Chromatique
+                        <span class="align-super sparkles">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5 inline">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
+                            </svg>
+                        </span>
+                    </p>
+                </div>
+            </li>
+        </template>
+
+        <template data-tpl-id="pokemon-statistic">
+            <div>
+                <p data-stat-name class="px-3 py-2 h-full font-bold sm:top-0 sm:rounded-bl-lg rounded-tl-lg border-l-4 border-solid"></p>
+                <p data-stat-value class="px-3 py-2 h-full border-r-4 sm:border-r-0 rounded-tr-lg text-right sm:rounded-tr-none" aria-hidden="true"></p>
+                <div data-stat-bar class="col-span-2 sm:col-auto px-3 py-2 h-full relative -top-[0.39rem] sm:top-0 sm:rounded-tr-lg sm:rounded-es-none rounded-ee-lg rounded-es-lg flex items-center sm:border-l-0 border-l-4 border-r-4 border-solid">
+                    <div class="stat-bar h-5 max-w-full bg-blue-300 border border-solid border-slate-900 relative"></div>
+                </div>
+            </div>
+        </template>
+
+        <dialog
+            data-pokemon-modal
+            data-pokemon-data
+            aria-labelledby="placeholder"
+            data-testid="pokemon-modal"
+            class="pkmn-details-dialog backdrop:backdrop-blur-(--details-modal-blur) backdrop:bg-slate-400/50 overscroll-y-contain bg-white rounded-lg md:my-8 w-11/12 sm:max-w-4xl border-2 border-solid mx-auto"
+        >
+            <header
+                class="main-infos border-b text-black pb-4 mb-3 md:sticky landscape:static landscape:lg:sticky top-0"
+            >
+            <div class="infinite-header-bg bg-white"></div>
+                <div class="sticky-header relative px-4 bg-white top-0 pt-2 pb-3 border-black border-solid border-b" data-top-infos>
+                    <div class="touch:flex hidden justify-center mb-2">
+                        <div class="h-2 rounded-xl w-7 bg-(--bg-modal-color) duration-150 pulldown-indicator rotate-12" data-pulldown-indicator=""></div>
+                        <div class="h-2 rounded-xl w-7 bg-(--bg-modal-color) duration-150 pulldown-indicator -ml-2 -rotate-12" data-pulldown-indicator=""></div>
+                    </div>
+                    <div class="flex flex-row gap-3">
+                        <div class="w-20">
+                            <img data-sprite src="/images/loading.svg" alt="" fetchpriority="high" />
+                        </div>
+                        <div class="grow">
+                            <h2 class="text-2xl font-bold"></h2>
+                            <p data-category class="text-sm -mt-1"></p>
+                            <div class="@container">
+                                <ul data-list-types class="flex gap-1 mt-2 flex-col @[10rem]:flex-row"></ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div
+                    class="flex flex-row px-4 w-full overflow-hidden mt-2 min-h-9"
+                >
+                    <div data-sex="male" data-sex-label="male" class="bar-sex-male relative bg-sky-300 border-b-sky-700 border-b-4 border-solid px-2 py-1 rounded-l-md after:bg-sky-700 overflow-hidden">
+                        <div class="hidden md:block text-black">
+                            <p class="whitespace-nowrap" id="sex-male">Mâle ♂</p>
+                            <p class="text-xs" data-sex-rate="male" aria-labelledby="sex-male"></p>
+                        </div>
+                    </div>
+                    <div data-sex="female" data-sex-label="female" class="bar-sex-female relative bg-pink-300 border-b-pink-700 border-b-4 border-solid px-2 py-1 rounded-r-md after:bg-pink-700 overflow-hidden">
+                        <div class="hidden md:block text-black">
+                            <p class="whitespace-nowrap" id="sex-female">Femelle ♀</p>
+                            <p class="text-xs" data-sex-rate="female" aria-labelledby="sex-female"></p>
+                        </div>
+                    </div>
+                    <div
+                        data-sex="asexual"
+                        class="bg-slate-300 border-b-slate-700 border-b-4 border-solid px-2 py-1 hidden w-full rounded-md"
+                    >
+                        <p>Asexué</p>
+                    </div>
+                </div>
+                <div class="px-4 md:hidden grid grid-flow-col">
+                    <div data-sex-label="male" class="">
+                        <p class="whitespace-nowrap">Mâle ♂</p>
+                        <p class="text-xs" data-sex-rate="male"></p>
+                    </div>
+                    <div data-sex-label="female" class="text-right">
+                        <p class="whitespace-nowrap">Femelle ♀</p>
+                        <p class="text-xs" data-sex-rate="female"></p>
+                    </div>
+                </div>
+                <div class="flex flex-col md:flex-row gap-3 mt-2 items-stretch md:items-start px-4">
+                    <ul class="shrink-0 bg-slate-50 rounded-md px-2 py-3">
+                        <li><span class="font-bold">Masse : </span><span data-weight></span></li>
+                        <li><span class="font-bold">Taille : </span><span data-height></span></li>
+                        <li><span class="font-bold">Taux de capture : </span><span data-catch-rate></span></li>
+                    </ul>
+                    <div class="grow bg-slate-50 rounded-md px-2 py-3">
+                        <p class="font-bold">Talents</p>
+                        <div class="flex flex-col gap-y-2" data-list-abilities></div>
+                    </div>
+                </div>
+            </header>
+            <div class="px-4 text-black">
+                <details>
+                    <summary class="hocus:marker:text-(color:--bg-modal-color) font-bold text-xl">
+                        Descriptions
+                    </summary>
+                    <dl></dl>
+                </details>
+                <details class="mt-3">
+                    <summary class="hocus:marker:text-(color:--bg-modal-color) font-bold text-xl">
+                        Statistiques de base
+                    </summary>
+                    <div data-statistics="" class="grid gap-y-1.5 grid-cols-[1fr_max-content] sm:grid-cols-[max-content_max-content_1fr] grid-rows-[max-content] items-center pt-3 relative -z-10"></div>
+                </details>
+                <details class="mt-3">
+                    <summary class="hocus:marker:text-(color:--bg-modal-color) font-bold text-xl">
+                        Évolution
+                    </summary>
+                    <p class="hidden" data-no-evolutions>Ce Pokémon n'a pas d'évolutions</p>
+                    <ul data-list-evolutions></ul>
+                    <div data-extra-evolutions class="mt-6">
+                        <p class="text-center">
+                            <span class="py-0.5 px-1.5 whitespace-nowrap bg-slate-900 text-white rounded-md mega-evolution align-super font-normal type-name">Méga-évolution(s)</span>
+                        </p>
+                        <p class="text-center">▼</p>
+                        <ul class="grid" style="grid-template-columns: repeat(auto-fit, minmax(25%, 1fr))"></ul>
+                    </div>
+                    <div data-pkmn-acronym-versions>
+                        <p class="font-bold">Notes</p>
+                        <ul class="list-disc list-outside px-4">
+                            <li data-acronym="rse">RSE : (Pokémon) Rubis / Saphir / Émeraude</li>
+                            <li data-acronym="nb">NB : (Pokémon) Noir / Blanc</li>
+                            <li data-acronym="n2b2">N2B2 : (Pokémon) Noir 2 / Blanc 2</li>
+                            <li data-acronym="rosa">ROSA : (Pokémon) Rubis Oméga / Saphir Alpha</li>
+                            <li data-acronym="rosa">SL : (Pokémon) Soleil / Lune</li>
+                            <li data-acronym="usul">USUL : (Pokémon) Ultra-Soleil / Ultra-Lune</li>
+                            <li data-acronym="deps">DEPS : (Pokémon) Diamant Écarlate / Perle Scintillante</li>
+                            <li data-acronym="eb">EB : (Pokémon) Épée / Bouclier</li>
+                            <li data-acronym="pla">PLA : Pokémon Légendes Arceus</li>
+                        </ul>
+                    </div>
+                </details>
+                <details class="mt-3 max-w @container/sensibilities">
+                    <summary class="hocus:marker:text-(color:--bg-modal-color) font-bold text-xl">
+                        Sensibilités
+                    </summary>
+                    <ul
+                        class="grid grid-cols-1 @sm/sensibilities:grid-cols-2 @xl/sensibilities:grid-cols-3 gap-3 mt-3"
+                        data-list-sensibilities=""
+                    ></ul>
+                </details>
+                <details class="mt-3">
+                    <summary class="hocus:marker:text-(color:--bg-modal-color) font-bold text-xl">
+                        Sprites
+                    </summary>
+                    <div class="mt-3 grid gap-2 grid-flow-col-dense" data-sprites-container>
+                    </div>
+                </details>
+                <details class="mt-3" data-testid="forms">
+                    <summary class="hocus:marker:text-(color:--bg-modal-color) font-bold text-xl">
+                        Formes <span data-nb-forms></span>
+                    </summary>
+                    <ul
+                        class="grid grid-cols-2 sm:grid-cols-3 gap-y-3 gap-x-1"
+                        data-list-forms=""
+                    ></ul>
+                </details>
+                <details class="mt-3" data-testid="regional-forms">
+                    <summary class="hocus:marker:text-(color:--bg-modal-color) font-bold text-xl">
+                        Formes régionales <span data-nb-regional-forms></span>
+                    </summary>
+                    <ul
+                        class="grid grid-cols-2 sm:grid-cols-3"
+                        data-list-regional-forms=""
+                    ></ul>
+                </details>
+                <details class="mt-3">
+                    <summary class="hocus:marker:text-(color:--bg-modal-color) font-bold text-xl">
+                        Apparitions <span data-nb-games></span>
+                    </summary>
+                    <ul
+                        class="columns-1 sm:columns-2 md:columns-3 list-inside list-disc"
+                        data-list-games=""
+                    ></ul>
+                </details>
+            </div>
+            <nav class="text-black">
+                <ul class="my-3 px-4 py-3 flex flex-col sm:flex-row gap-6 justify-center" data-list-siblings-pokemon>
+                </ul>
+            </nav>
+
+            <footer class="bottom-0 modal-footer sticky pt-1 pb-4 text-black">
+                <div class="px-4">
+                    <button
+                        data-close-modal=""
+                        data-testid="close-modal"
+                        class="block rounded-md transition-colors hocus:bg-white hocus:text-black w-full mt-2 p-2 border border-black border-solid bg-slate-950 text-white ease-out"
+                        >
+                        Fermer
+                    </button>
+                </div>
+            </footer>
+        </dialog>
+    </body>
+</html>
