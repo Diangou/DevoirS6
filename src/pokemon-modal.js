@@ -67,6 +67,8 @@ const loadGenerationBtn = document.querySelector("[data-load-generation]");
 
 const modal_DOM = {
     pkmnName: modal.querySelector("h2"),
+    pkmnNameEN: modal.querySelector("[pokemon-name-en]"),
+    pkmnNameJP: modal.querySelector("[pokemon-name-jp]"),
     img: modal.querySelector("img"),
     category: modal.querySelector("[data-category]"),
     listTypes: modal.querySelector("[data-list-types]"),
@@ -349,6 +351,10 @@ displayModal = async (pkmnData) => {
 
     modal_DOM.pkmnName.textContent = `#${String(pkmnData.pokedex_id).padStart(NB_NUMBER_INTEGERS_PKMN_ID, '0')} ${pkmnData.name.fr}`;
     document.title = `${modal_DOM.pkmnName.textContent} - ${initialPageTitle}`;
+
+    modal_DOM.pkmnNameEN.textContent = `${pkmnData.name.en}`;
+    modal_DOM.pkmnNameJP.textContent = `${pkmnData.name.jp}`;
+
 
     if (listDescriptions?.is_legendary || listDescriptions?.is_mythical) {
         const cloneHighlight = document.importNode(
