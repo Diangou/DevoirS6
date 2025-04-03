@@ -49,6 +49,8 @@ modal.dataset.isGridLayout = isGridLayout;
 
 export const listPokemon = [];
 
+
+
 export const setTitleTagForGeneration = () => {
     const allStickedHeaders = Array.from(document.querySelectorAll(".is-pinned"));
     let allStickedVisibleHeaders = allStickedHeaders.filter((item) => isElementInViewport(item));
