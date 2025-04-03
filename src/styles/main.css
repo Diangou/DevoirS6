@@ -4,14 +4,7 @@
 
 @config '../../tailwind.config.js';
 
-/*
-  The default border color has changed to `currentColor` in Tailwind CSS v4,
-  so we've added these compatibility styles to make sure everything still
-  looks the same as it did with Tailwind CSS v3.
 
-  If we ever want to remove these styles, we need to add an explicit border
-  color utility to any element that depends on these defaults.
-*/
 @layer base {
     *,
     ::after,
@@ -61,6 +54,12 @@
         src: url("/OpenSans-Italic-VariableFont_wdth,wght.ttf") format("truetype");
         font-style: italic;
         font-weight: 300 800;
+    }
+
+    /* Type alignment for list mode */
+    .grid-cols-1 [data-pokemon-type-container] {
+        justify-content: flex-end;
+        margin-left: auto;
     }
 }
 
@@ -608,4 +607,34 @@ details {
     transition-property: scale, color;
     transition-duration: var(--duration-150);
     transform-origin: center;
+}
+
+.pokedex {
+  container-type: inline-size;
+}
+
+.pokedex:not(.grid-cols-1) [data-types-list] {
+  display: none;
+}
+
+
+.pokedex.grid-cols-1 [data-pokemon-data] {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.pokedex.grid-cols-1 [data-pokemon-data] img {
+  width: 80px;
+  height: 80px;
+  flex-shrink: 0;
+}
+
+.pokedex.grid-cols-1 [data-pokemon-data] [data-pkmn-name] {
+  font-size: 1.125rem;
+  white-space: normal;
+}
+
+.pokedex.grid-cols-1 [data-types-list] {
+  margin-top: 0.5rem;
 }

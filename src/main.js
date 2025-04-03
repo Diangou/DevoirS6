@@ -33,6 +33,7 @@ const pkdexTemplateRaw = document.querySelector("[data-tpl-id='pokedex']");
 const generationShortcutTemplateRaw = document.querySelector("[data-tpl-id='generation-shortcut-link']");
 const marqueeTypeTextTemplateRaw = document.querySelector("[data-tpl-id='marquee-type-text']");
 const marqueeTypeContainerTemplateRaw = document.querySelector("[data-tpl-id='marquee-type-container']");
+const pkmnTypeBubbleTemplateRaw = document.querySelector("[data-tpl-id='pokemon-type-bubble']");
 
 const pokedexContainer = document.querySelector("[data-list-pokedex]");
 
@@ -91,7 +92,12 @@ const updatePokedexLayout = (_isGridLayout) => {
         item.classList.toggle("lg:grid-cols-6", _isGridLayout);
         item.classList.toggle("grid-cols-1", !_isGridLayout);
     });
-};
+    
+    Array.from(document.querySelectorAll("[data-pokemon-type-container]")).forEach((typeContainer) => {
+        typeContainer.classList.toggle("justify-end", !_isGridLayout);
+        typeContainer.classList.toggle("ml-auto", !_isGridLayout);
+    });
+}
 
 updatePokedexLayout(isGridLayout);
 
@@ -263,9 +269,32 @@ const loadPokedexForGeneration = async (generation = 1, triggerElement) => {
             aTag.style.scrollMargin = `${headerPokedex.offsetHeight}px`;
             aTag.dataset.pokemonData = JSON.stringify(item);
             aTag.dataset.pokemonId = item.pokedex_id;
-            aTag.classList.add(...[
+            aTag.classList.add(
                 typesAnimatedBorderColor[`${cleanString(item.types[0].name)}_${cleanString(item.types[1]?.name || item.types?.[0].name)}`]
-            ]);
+            );
+
+            const typesList = document.createElement('ul');
+            typesList.classList.add('flex', 'gap-1', 'mt-1', 'types-list');
+            typesList.setAttribute('data-types-list', '');
+
+            item.types.forEach((type) => {
+                const typeBubble = document.importNode(pkmnTypeBubbleTemplateRaw.content, true);
+                const li = typeBubble.querySelector('li');
+                const typeSpan = typeBubble.querySelector('span');
+                const typeImg = typeBubble.querySelector('img');
+                
+                li.style.backgroundColor = `var(--type-${cleanString(type.name)})`;
+                li.setAttribute('aria-label', `Type ${type.name}`);
+                typeSpan.textContent = type.name;
+                
+                typeImg.alt = `icône type ${type.name}`;
+                replaceImage(typeImg, type.image);
+                
+                typesList.appendChild(typeBubble);
+            });
+
+            aTag.appendChild(typesList);
+
             aTag.addEventListener("click", loadDetailsModal);
             aTag.addEventListener("mouseover", generateMarqueeTypes);
             aTag.addEventListener("focus", generateMarqueeTypes);
@@ -327,15 +356,167 @@ const loadPokedexForGeneration = async (generation = 1, triggerElement) => {
 const urlParams = new URLSearchParams(window.location.search);
 const pkmnId = urlParams.get("id");
 
+//easter egg ;)
 export const observeURL = async () => {
     if (pkmnId !== null) {
         try {
+            if (pkmnId === "kiryu" || pkmnId === "777") {
+                const kiryuPokemon = {
+                    pokedex_id: 777,
+                    generation: 1,
+                    category: "Pokémon Dragon de Dojima",
+                    name: { fr: "Kiryu Kazuma", en: "Kiryu Kazuma", jp: "桐生 一馬" },
+                    sprites: {
+                        regular: "https://i.imgur.com/GuNPIVe.jpeg", 
+                        shiny: "https://i.imgur.com/GuNPIVe.jpeg",   
+                        gmax: null
+                    },
+                    types: [
+                        {
+                            name: "Combat",
+                            image: "https://raw.githubusercontent.com/Yarkis01/TyraDex/images/types/combat.png",
+                        },
+                        {
+                            name: "Dragon",
+                            image: "https://raw.githubusercontent.com/Yarkis01/TyraDex/images/types/dragon.png",
+                        }
+                    ],
+                    talents: [
+                        { name: "Esprit du Dragon", tc: false },
+                        { name: "Brawler", tc: false },
+                        { name: "Cœur d'Or", tc: true },
+                    ],
+                    stats: { hp: 150, atk: 130, def: 120, spe_atk: 60, spe_def: 100, vit: 100 },
+                    height: "1,8 m",
+                    weight: "88,0 kg",
+                    evolution: {
+                        pre: null,
+                        next: null,
+                        mega: null
+                    },
+                    egg_groups: ["Dragon", "Humanoïde"],
+                    sexe: { male: 100, female: 0 },
+                    catch_rate: 3,
+                    level_100: 1250000,
+                    cry: "KIRYU-CHAN!",
+                    resistances: [
+                        { name: "Normal", multiplier: 1.0 },
+                        { name: "Feu", multiplier: 0.5 },
+                        { name: "Eau", multiplier: 1.0 },
+                        { name: "Électrik", multiplier: 1.0 },
+                        { name: "Plante", multiplier: 1.0 },
+                        { name: "Glace", multiplier: 2.0 },
+                        { name: "Combat", multiplier: 0.5 },
+                        { name: "Poison", multiplier: 1.0 },
+                        { name: "Sol", multiplier: 1.0 },
+                        { name: "Vol", multiplier: 1.0 },
+                        { name: "Psy", multiplier: 1.0 },
+                        { name: "Insecte", multiplier: 1.0 },
+                        { name: "Roche", multiplier: 1.0 },
+                        { name: "Spectre", multiplier: 1.0 },
+                        { name: "Dragon", multiplier: 0.5 },
+                        { name: "Ténèbres", multiplier: 0.5 },
+                        { name: "Acier", multiplier: 1.0 },
+                        { name: "Fée", multiplier: 2.0 }
+                    ],
+                    descriptions: {
+                        "rubis": "Un Pokémon légendaire originaire de Kamurocho. Sa force de volonté est comparable à celle d'un dragon.",
+                        "saphir": "Il combat pour protéger ceux qu'il aime, et ne recule jamais face à l'adversité.",
+                        "emeraude": "On l'appelle le Dragon de Dojima. Ses poings sont aussi puissants qu'un Impact Météore.",
+                        "rouge-feu": "Sa technique de combat légendaire, le Tiger Drop, peut repousser n'importe quel adversaire.",
+                        "vert-feuille": "Bien qu'il paraisse intimidant, il a un cœur d'or et ne refuse jamais d'aider ceux dans le besoin.",
+                        "diamant": "Il erre dans les rues à la recherche d'adversaires dignes de lui. A déjà vaincu des organisations entières.",
+                        "perle": "Son sens de la justice est inébranlable. Il préfère régler les conflits avec ses poings.",
+                        "platine": "Son style de combat évolue au fil du temps. Il maîtrise les styles Dragon, Rush, Bête et Tigre.",
+                        "or-heartgold": "Il maîtrise tous les arts martiaux et peut adopter différents styles de combat selon la situation.",
+                        "argent-soulsilver": "La légende raconte qu'il aurait vaincu cent hommes lors d'un seul combat.",
+                        "noir": "Ce Pokémon légendaire a passé 10 ans en prison pour un crime qu'il n'a pas commis, afin de protéger ses amis.",
+                        "blanc": "Il peut sembler stoïque, mais il éprouve des émotions profondes et un grand sens de l'honneur.",
+                        "noir-2": "Ses exploits à Kamurocho sont devenus légendaires. Peu osent le défier directement.",
+                        "blanc-2": "On dit qu'il a vaincu des créatures mythiques et même des dragons à mains nues.",
+                        "x": "Un Pokémon légendaire originaire de Kamurocho. Sa force de volonté est comparable à celle d'un dragon.",
+                        "y": "Il combat pour protéger ceux qu'il aime, et ne recule jamais face à l'adversité.",
+                        "rubis-omega": "Il a plus de 50 cicatrices, chacune témoignant d'une bataille légendaire.",
+                        "saphir-alpha": "Son talent 'Cœur d'Or' lui permet de ressentir les émotions des autres Pokémon en détresse.",
+                        "soleil": "Certains racontent qu'il aurait même battu un Pokémon Légendaire en duel singulier.",
+                        "lune": "Il semble toujours apparaître quand une ville est en danger, puis disparaît une fois la paix revenue.",
+                        "ultra-soleil": "Sa loyauté envers ses amis est sans égale, même parmi tous les Pokémon.",
+                        "ultra-lune": "Malgré sa puissance, il préfère utiliser les mots avant les poings.",
+                        "epee": "Ce Pokémon rare peut apprendre diverses techniques de combat. Il devient plus fort après chaque bataille.",
+                        "bouclier": "On raconte qu'il peut vaincre 100 adversaires à lui seul. Il a un code d'honneur strict.",
+                    },
+                    habitat: "Urbain",
+                    color: "Gris",
+                    shape: "Humanoïde",
+                    formes: null,
+                    abilities: [
+                        "Peut exécuter l'attaque Heat Action lorsque sa jauge de chaleur est pleine.",
+                        "Devient plus fort lorsqu'il protège ses amis.",
+                        "Peut changer de style de combat en plein affrontement."
+                    ],
+                    moves: [
+                        "Tiger Drop",
+                        "Essence of Dragon",
+                        "Rush Combo",
+                        "Beast Mode",
+                        "Extreme Heat Mode",
+                        "Komaki Parry",
+                        "Thug Style",
+                        "Dragon of Dojima"
+                    ]
+                };
+                
+                const kiryuSpecies = {
+                    is_legendary: true,
+                    flavor_text_entries: Object.entries(kiryuPokemon.descriptions).map(([version, text]) => ({
+                        language: { name: "fr" },
+                        version: { name: version },
+                        flavor_text: text
+                    }))
+                };
+                
+                const originalFetch = window.fetch;
+                window.fetch = function(...args) {
+                    const url = args[0].toString();
+                    
+                    if (url.includes('/api/') || url.includes('pokemon')) {
+                        return Promise.resolve({
+                            ok: true,
+                            json: () => Promise.resolve(kiryuPokemon),
+                            text: () => Promise.resolve(JSON.stringify(kiryuPokemon)),
+                            status: 200
+                        });
+                    }
+                    
+                    if (url.includes('/species/') || url.includes('species')) {
+                        return Promise.resolve({
+                            ok: true,
+                            json: () => Promise.resolve(kiryuSpecies),
+                            text: () => Promise.resolve(JSON.stringify(kiryuSpecies)),
+                            status: 200
+                        });
+                    }
+                    
+                    return originalFetch.apply(this, args);
+                };
+                
+                try {
+                    await loadPokemonData(kiryuPokemon);
+                    modal.showModal();
+                } finally {
+                    window.fetch = originalFetch;
+                }
+                
+                return;
+            }
+            
             const pkmnData = await fetchPokemon(pkmnId, urlParams.get("region"));
             pkmnData.alternate_form_id = urlParams.get("alternate_form_id");
 
             await loadPokemonData(pkmnData);
             modal.showModal();
         } catch (_e) {
+            console.error("Error loading Pokémon:", _e);
             modal.close();
             errorMessageContainer.textContent = `Le Pokémon avec l'id "${pkmnId}" n'existe pas`;
             errorPopover.dataset.error = POPOVER_ERRORS.unknown_pkmn;
