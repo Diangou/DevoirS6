@@ -34,7 +34,27 @@ import modalPulldownClose from "#src/modal-pulldown-close.js"
 
 import { listPokemon, setTitleTagForGeneration, hasReachPokedexEnd, rippleEffect } from "./main";
 import loadingImage from "/images/loading.svg";
-import loadingImageRaw from "/images/loading.svg?raw";
+import loadingImageRaw from "/images/loading.svg?raw";// Assurez-vous que pokemonName est correctement défini avant d'être utilisé
+import { getPokemonCards } from './utils/pokemon-modal.utils.js';
+
+async function displayPokemonCards(pokemonName) {
+  const cards = await getPokemonCards(pokemonName);
+
+  const container = document.getElementById('pokemon-cards-container');
+  container.innerHTML = ''; // Vider le conteneur avant d'ajouter les cartes
+
+  cards.forEach(card => {
+    const imgElement = document.createElement('img');
+    imgElement.src = card.imageUrl; // URL de l'image de la carte
+    imgElement.alt = `Carte Pokémon ${card.name}`;
+    imgElement.classList.add('pokemon-card-image');
+    container.appendChild(imgElement);
+  });
+}
+
+// Exemple d'appel de fonction pour afficher les cartes de "Pikachu"
+displayPokemonCards('Pikachu');
+
 
 const closeModalBtn = document.querySelector("[data-close-modal]");
 const modal = document.querySelector("[data-pokemon-modal]");
