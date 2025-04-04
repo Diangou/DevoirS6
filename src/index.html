@@ -458,10 +458,61 @@
                         data-list-games=""
                     ></ul>
                 </details>
-                <div id="pokemon-modal">
-                    <!-- Le contenu de la modale sera mis à jour dynamiquement ici -->
-                </div>
-
+                <details class="mt-3" id="pokemonCardsContainer">
+                    <summary class="pokemon-cards-summary font-bold text-xl">
+                        Cartes du Pokémon
+                    </summary>
+                    <div id="cardsDisplay" class="mt-3 flex flex-wrap justify-center gap-4 p-4 rounded-lg">
+                        <!-- Les cartes seront injectées ici -->
+                    </div>
+                </details>
+                <script type="module">
+                    import { fetchPokemonCards } from '/src/api/tcgdex.js';
+                
+                    document.addEventListener("click", async (event) => {
+                        const pokemonLink = event.target.closest(".pokemon");
+                        if (!pokemonLink) return;
+                
+                        event.preventDefault();
+                
+                        const pkmnName = pokemonLink.getAttribute("data-pokemon-name");
+                        console.log("✅ Nom du Pokémon récupéré :", pkmnName); // Log du nom du Pokémon
+                
+                        if (!pkmnName) {
+                            console.error("❌ Aucun nom trouvé sur le Pokémon cliqué.");
+                            return;
+                        }
+                
+                        const container = document.getElementById("cardsDisplay");
+                        if (!container) {
+                            console.error("❌ Conteneur des cartes introuvable !");
+                            return;
+                        }
+                
+                        container.innerHTML = `<p>🔄 Chargement des cartes...</p>`;
+                
+                        try {
+                            const cards = await fetchPokemonCards(pkmnName);
+                            console.log("📦 Cartes récupérées :", cards);
+                
+                            if (!cards || cards.length === 0) {
+                                container.innerHTML = `<p>❌ Aucune carte trouvée.</p>`;
+                                return;
+                            }
+                
+                            container.innerHTML = cards
+    .map(card => {
+        return `<img src="${card.image}/low.png" alt="Carte Pokémon ${pkmnName}" class="w-32 h-auto rounded-lg shadow-md">`;
+    })
+    .join("");
+                
+                        } catch (error) {
+                            console.error("❌ Erreur lors du chargement des cartes :", error);
+                            container.innerHTML = `<p>❌ Erreur lors du chargement des cartes.</p>`;
+                        }
+                    });
+                </script>
+                
                              
             <nav class="text-black">
                 <ul class="my-3 px-4 py-3 flex flex-col sm:flex-row gap-6 justify-center" data-list-siblings-pokemon>
