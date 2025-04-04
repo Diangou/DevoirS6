@@ -333,14 +333,14 @@ export const observeURL = async () => {
         try {
             console.log("ID Pokémon récupéré:", pkmnId);
 
-            // 1. Récupère la génération du Pokémon
+            // 1. Récupérer les données externes pour avoir la génération
             const speciesData = await fetchPokemonExternalData(pkmnId);
             const generationUrl = speciesData.generation.url;
             const generationId = parseInt(generationUrl.split("/").filter(Boolean).pop());
 
             console.log("ID génération récupéré:", generationId);
 
-            // 2. Charge toutes les générations de 1 jusqu'à celle du Pokémon
+            // 2. Charger toutes les générations de 1 jusqu'à celle du Pokémon
             for (let i = 1; i <= generationId; i++) {
                 console.log(`Chargement génération ${i}`);
                 await loadPokedexForGeneration(i);
@@ -372,6 +372,23 @@ export const observeURL = async () => {
             await loadPokemonData(pkmnData);
             modal.showModal();
 
+            // 5. Afficher les numéros Pokédex par région
+            const externalData = await fetchPokemonExternalData(pkmnId);
+            const pokedexPanel = document.querySelector("[data-panel-pokedex-numbers]");
+            if (pokedexPanel) {
+                pokedexPanel.innerHTML = "";
+                if (externalData.pokedex_numbers && externalData.pokedex_numbers.length > 0) {
+                    pokedexPanel.innerHTML = ``;
+                    externalData.pokedex_numbers.forEach(entry => {
+                        const region = entry.pokedex.name;
+                        const entryNumber = entry.entry_number.toString().padStart(3, "0");
+                        pokedexPanel.innerHTML += `&bull; ${region.charAt(0).toUpperCase() + region.slice(1)} : #${entryNumber}<br>`;
+                    });
+                } else {
+                    pokedexPanel.innerHTML = "<em>Aucun numéro régional disponible.</em>";
+                }
+            }
+
         } catch (error) {
             console.error(error);
             modal.close();
@@ -380,12 +397,13 @@ export const observeURL = async () => {
             errorPopover.showPopover();
         }
     } else {
-        // Aucun ID → on commence à charger Gen 1
+        // Si pas d'ID dans l'URL, on charge la génération 1
         await loadPokedexForGeneration(1);
     }
 };
 
 await observeURL();
+
 
 
 delegateEventHandler(document, "click", "[data-load-generation]", (e) => {
