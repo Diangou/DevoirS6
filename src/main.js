@@ -129,11 +129,10 @@ export const rippleEffect = (e, color = "#fff") => {
 const loadDetailsModal = async (e) => {
     e.preventDefault();
 
-    const listPokedexEntries = document.querySelectorAll("[data-pokemon-data]")
+    const listPokedexEntries = document.querySelectorAll("[data-pokemon-data]");
     listPokedexEntries.forEach((item) => { item.inert = true; });
 
     const $el = e.currentTarget;
-
     const pkmnDataRaw = $el.dataset.pokemonData;
     const pkmnData = JSON.parse(pkmnDataRaw);
 
@@ -149,6 +148,26 @@ const loadDetailsModal = async (e) => {
 
     await loadPokemonData(pkmnData);
 
+    // 🆕 AJOUT : mise à jour du panel de numéros régionaux même hors URL
+    try {
+        const externalData = await fetchPokemonExternalData(pkmnData.pokedex_id);
+        const pokedexPanel = document.querySelector("[data-panel-pokedex-numbers]");
+        if (pokedexPanel) {
+            pokedexPanel.innerHTML = "";
+            if (externalData.pokedex_numbers && externalData.pokedex_numbers.length > 0) {
+                externalData.pokedex_numbers.forEach(entry => {
+                    const region = entry.pokedex.name;
+                    const entryNumber = entry.entry_number.toString().padStart(3, "0");
+                    pokedexPanel.innerHTML += `&bull; ${region.charAt(0).toUpperCase() + region.slice(1)} : #${entryNumber}<br>`;
+                });
+            } else {
+                pokedexPanel.innerHTML = "<em>Aucun numéro régional disponible.</em>";
+            }
+        }
+    } catch (error) {
+        console.error("Erreur lors du chargement des numéros régionaux :", error);
+    }
+
     modal.showModal();
 
     const url = new URL(location);
@@ -156,7 +175,7 @@ const loadDetailsModal = async (e) => {
     history.pushState({}, "", url);
 
     listPokedexEntries.forEach((item) => { item.inert = false; });
-}
+};
 
 const generateMarqueeTypes = (e) => {
     if (e.currentTarget.dataset.hasMarqueeTypes) {
