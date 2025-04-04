@@ -159,6 +159,19 @@ html {
     }
 }
 
+.card-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .card-container img {
+    width: 100%;
+    max-width: 200px;
+    height: auto;
+    margin: 5px;
+  }
+
 .no-dimorphism {
     background: rgb(233, 233, 233);
     background: linear-gradient(

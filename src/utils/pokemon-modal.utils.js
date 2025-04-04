@@ -6,36 +6,6 @@ import {
 } from "#utils";
 
 import loadingImageRaw from "/images/loading.svg?raw";
-export async function getPokemonCards(pokemonName) {
-    const cachedCards = localStorage.getItem(pokemonName);
-
-    if (cachedCards) {
-      return JSON.parse(cachedCards);
-    } else {
-      // Utilisation de l'API pour récupérer les données de la carte
-      const response = await fetch(`https://api.tcgdex.net/v2/cards?name=${pokemonName}`);
-      const data = await response.json();
-
-      if (data.data) {
-        // Créer des URLs pour les images de cartes
-        const cards = data.data.map(card => {
-          return {
-            name: card.name,
-            imageUrl: `https://assets.tcgdex.net/${card.set.language}/${card.set.id}/${card.id}/high.jpg`
-          };
-        });
-
-        // Cache des cartes
-        localStorage.setItem(pokemonName, JSON.stringify(cards));
-
-        return cards;
-      } else {
-        console.log("Aucune carte trouvée pour ce Pokémon");
-        return [];
-      }
-    }
-}
-
 
 export const pkmnHighlightTemplateRaw = document.querySelector(
     "[data-tpl-id='pokemon-highlight']"

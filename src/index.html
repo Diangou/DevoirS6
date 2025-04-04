@@ -344,28 +344,48 @@
                         </ul>
                     </div>
                 </details>
-                <details class="mt-3">
-                    <summary class="hocus:marker:text-(color:--bg-modal-color) font-bold text-xl">
-                        Cri du Pokémon
-                    </summary>
-                    <div class="mt-3 flex flex-col items-center justify-center p-4 bg-gray-100 rounded-lg shadow-md">
-                        <h2 class="text-lg font-semibold text-gray-700">Cri du Pokémon</h2>
-                        <div id="waveform" class="w-full max-w-md bg-white p-2 rounded-md shadow"></div>
-                        <button id="playPause" class="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-                            Jouer/Pause
-                        </button>
-                    </div>
-                </details>
-                
-                <script type="module">
-                    import { setupWaveSurfer } from '/src/utils/sound.js';
-                    
-                    setupWaveSurfer('pikachu'); // Remplace par le vrai nom du Pokémon sélectionné
-                </script>
-                
+                <!-- Exemple d'un Pokémon cliquable -->
+<details class="mt-3" id="pokemonCryContainer">
+    <summary class="hocus:marker:text-(color:--bg-modal-color) font-bold text-xl">
+        Cri du Pokémon
+    </summary>
+    <div class="mt-3 flex flex-col items-center justify-center p-4 bg-gray-100 rounded-lg shadow-md">
+        <h2 id="pokemonName" class="text-lg font-semibold text-gray-700">Cri du Pokémon</h2>
+        <div id="waveform" class="w-full max-w-md bg-white p-2 rounded-md shadow"></div>
+        <button id="playPause" class="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+            Jouer/Pause
+        </button>
+    </div>
+    <a class="pokemon" data-pokemon-id="1">Bulbizarre</a>
+<a class="pokemon" data-pokemon-id="25">Pikachu</a>
+</details>
+<script type="module">
+    import { setupPokemonCry } from '/src/utils/sound.js';
 
-                
-                
+    document.addEventListener("DOMContentLoaded", () => {
+        // Sélectionne tous les liens Pokémon générés dynamiquement
+        document.querySelectorAll(".pokemon").forEach(pokemonLink => {
+            pokemonLink.addEventListener("click", (event) => {
+                event.preventDefault(); // Empêche le changement de page
+
+                // Récupérer l'ID du Pokémon depuis l'attribut `data-pokemon-id`
+                const pkmnId = pokemonLink.getAttribute("data-pokemon-id");
+
+                // Vérification que l'ID est bien récupéré
+                if (!pkmnId) {
+                    console.error("❌ Aucun ID trouvé sur le Pokémon cliqué.");
+                    return;
+                }
+
+                console.log("✅ ID récupéré :", pkmnId); // Vérifier que l'ID est bien récupéré
+
+                setupPokemonCry(pkmnId); // Charge le cri du Pokémon sélectionné
+            });
+        });
+    });
+</script>
+
+
                 <details class="mt-3 max-w @container/sensibilities">
                     <summary class="hocus:marker:text-(color:--bg-modal-color) font-bold text-xl">
                         Sensibilités
@@ -409,18 +429,11 @@
                         data-list-games=""
                     ></ul>
                 </details>
-                <details class="mt-3">
-                    <summary class="hocus:marker:text-(color:--bg-modal-color) font-bold text-xl">
-                      Cartes Pokémon <span data-nb-pokemon-cards></span>
-                    </summary>
-                    <div id="pokemon-cards-container" class="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                      <!-- Les cartes Pokémon seront injectées ici dynamiquement -->
-                      <img class="pokemon-card-image" src="" alt="Carte Pokémon">
-                    </div>
-                  </details>
-                  
-                  
-                
+                <div id="pokemon-modal">
+                    <!-- Le contenu de la modale sera mis à jour dynamiquement ici -->
+                </div>
+
+                             
             <nav class="text-black">
                 <ul class="my-3 px-4 py-3 flex flex-col sm:flex-row gap-6 justify-center" data-list-siblings-pokemon>
                 </ul>

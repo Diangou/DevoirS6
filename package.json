@@ -30,6 +30,7 @@
         "vituum": "^1.1.1"
     },
     "dependencies": {
+        "@tcgdex/sdk": "^2.6.0",
         "axios": "^1.7.8",
         "core-js": "^3.40.0",
         "wavesurfer.js": "^7.9.4"
