@@ -36,3 +36,10 @@ export const fetchAbilityData = async (url) => {
     }
 }
 
+export const getPokemonCry = (pokemonId) => {
+    return `https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${pokemonId}.ogg`;
+};
+
+
+
+

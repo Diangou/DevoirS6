@@ -34,7 +34,9 @@ import modalPulldownClose from "#src/modal-pulldown-close.js"
 
 import { listPokemon, setTitleTagForGeneration, hasReachPokedexEnd, rippleEffect } from "./main";
 import loadingImage from "/images/loading.svg";
-import loadingImageRaw from "/images/loading.svg?raw";
+import loadingImageRaw from "/images/loading.svg?raw";// Assurez-vous que pokemonName est correctement défini avant d'être utiliséimport { getPokemonCards } from './utils/pokemon-modal.utils.js';
+
+
 
 const closeModalBtn = document.querySelector("[data-close-modal]");
 const modal = document.querySelector("[data-pokemon-modal]");
