@@ -237,7 +237,7 @@
             class="pkmn-details-dialog backdrop:backdrop-blur-(--details-modal-blur) backdrop:bg-slate-400/50 overscroll-y-contain bg-white rounded-lg md:my-8 w-11/12 sm:max-w-4xl border-2 border-solid mx-auto"
         >
             <header
-                class="main-infos border-b text-black pb-4 mb-3 md:sticky landscape:static landscape:lg:sticky top-0"
+                class="main-infos border-b text-black pb-4 mb-3 md:sticky landscape:static landscape:lg:sticky top-0 z-10"
             >
             <div class="infinite-header-bg bg-white"></div>
                 <div class="sticky-header relative px-4 bg-white top-0 pt-2 pb-3 border-black border-solid border-b" data-top-infos>
@@ -309,6 +309,58 @@
                 </div>
             </header>
             <div class="px-4 text-black">
+                        
+<details class="mt-3" id="pokemonCryContainer">
+    <summary id="pokemonName" class="pokemon-cry-summary hocus:marker:text-(color:--bg-modal-color) font-bold text-xl">
+        Cri du Pokémon
+    </summary>
+    <div class="mt-3 flex flex-col items-center justify-center p-4 rounded-lg ">
+        <div id="waveform" class="w-full max-w-md bg-white p-2 rounded-md shadow"></div>
+        <button id="playPause" class="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+            Jouer/Pause
+        </button>
+    </div>
+</details>
+<script type="module">
+    import { setupPokemonCry } from '/src/utils/sound.js';
+
+    // Écouteur d'événements global pour capturer les clics sur les Pokémon dynamiques
+    document.addEventListener("click", (event) => {
+        const pokemonLink = event.target.closest(".pokemon"); // Vérifie si l'élément cliqué est un Pokémon
+
+        if (!pokemonLink) return; // Si ce n'est pas un Pokémon, on ne fait rien
+
+        event.preventDefault(); // Empêche le changement de page
+
+        // Récupérer l'ID du Pokémon
+        const pkmnId = pokemonLink.getAttribute("data-pokemon-id");
+
+        if (!pkmnId) {
+            console.error("❌ Aucun ID trouvé sur le Pokémon cliqué.");
+            return;
+        }
+
+        console.log("✅ ID récupéré :", pkmnId); // Vérifier que l'ID est bien récupéré
+        setupPokemonCry(pkmnId); // Charge le cri du Pokémon sélectionné
+    });
+</script>
+
+<script type="module">
+    import { setupPokemonCry } from '/src/utils/sound.js';
+
+    window.addEventListener("DOMContentLoaded", () => {
+        const pkmnId = document.body.dataset.currentPokemonId || new URLSearchParams(window.location.search).get("id");
+
+        if (pkmnId) {
+            console.log("🌍 Détection via dataset ou URL, ID Pokémon :", pkmnId);
+            setupPokemonCry(pkmnId); // Joue le cri du Pokémon directement
+        } else {
+            console.warn("❌ Aucun ID trouvé via dataset ou URL.");
+        }
+    });
+</script>
+
+
                 <details class="mt-3">
                     <summary class="hocus:marker:text-(color:--bg-modal-color) font-bold text-xl">
                         Numéros Pokédex par région
@@ -362,48 +414,6 @@
                         </ul>
                     </div>
                 </details>
-                <!-- Exemple d'un Pokémon cliquable -->
-
-                
-<details class="mt-3" id="pokemonCryContainer">
-    <summary class="hocus:marker:text-(color:--bg-modal-color) font-bold text-xl">
-        Cri du Pokémon
-    </summary>
-    <div class="mt-3 flex flex-col items-center justify-center p-4 bg-gray-100 rounded-lg shadow-md">
-        <h2 id="pokemonName" class="text-lg font-semibold text-gray-700">Cri du Pokémon</h2>
-        <div id="waveform" class="w-full max-w-md bg-white p-2 rounded-md shadow"></div>
-        <button id="playPause" class="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-            Jouer/Pause
-        </button>
-    </div>
-    <a class="pokemon" data-pokemon-id="1">Bulbizarre</a>
-<a class="pokemon" data-pokemon-id="25">Pikachu</a>
-</details>
-<script type="module">
-    import { setupPokemonCry } from '/src/utils/sound.js';
-
-    // Écouteur d'événements global pour capturer les clics sur les Pokémon dynamiques
-    document.addEventListener("click", (event) => {
-        const pokemonLink = event.target.closest(".pokemon"); // Vérifie si l'élément cliqué est un Pokémon
-
-        if (!pokemonLink) return; // Si ce n'est pas un Pokémon, on ne fait rien
-
-        event.preventDefault(); // Empêche le changement de page
-
-        // Récupérer l'ID du Pokémon
-        const pkmnId = pokemonLink.getAttribute("data-pokemon-id");
-
-        if (!pkmnId) {
-            console.error("❌ Aucun ID trouvé sur le Pokémon cliqué.");
-            return;
-        }
-
-        console.log("✅ ID récupéré :", pkmnId); // Vérifier que l'ID est bien récupéré
-        setupPokemonCry(pkmnId); // Charge le cri du Pokémon sélectionné
-    });
-</script>
-
-
                 <details class="mt-3 max-w @container/sensibilities">
                     <summary class="hocus:marker:text-(color:--bg-modal-color) font-bold text-xl">
                         Sensibilités

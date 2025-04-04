@@ -299,6 +299,7 @@ const loadPokedexForGeneration = async (generation = 1, triggerElement) => {
             pokedexItemScrollingObserver.observe(aTag);
         });
         listLoadGenerationBtns.forEach((item) => item.dataset.loadGeneration = Number(generation) + 1);
+        document.body.dataset.currentPokemonId = pkmnId;
 
         updateSwitchIcons(isGridLayout);
         updatePokedexLayout(isGridLayout);
@@ -465,5 +466,7 @@ window.addEventListener("offline", () => {
     errorPopover.dataset.error = POPOVER_ERRORS.lost_connection;
     errorPopover.showPopover();
 });
+
+
 
 export { loadPokedexForGeneration };

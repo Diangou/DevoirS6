@@ -171,6 +171,72 @@ html {
     height: auto;
     margin: 5px;
   }
+  .pokemon-cry-summary {
+    background-color: #353535;
+    color: #FFFFFF;
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 18px;
+    text-align: center;
+    cursor: pointer;
+    transition: 0.3s ease-in-out;
+    width: 200px; /* Fixe la largeur */
+    margin: 0 auto; /* Centre l'élément */
+}
+
+  #pokemonCryContainer {
+    background: linear-gradient(180deg, #C03028 50%, #F8F8F8 50%); /* Rouge en haut, blanc cassé en bas */
+    padding: 20px;
+    color: rgb(0, 0, 0);
+    border-radius: 12px;
+    box-shadow: 0 0 15px rgba(255, 50, 50, 0.5); /* Effet lumineux rouge */
+    text-align: center;
+    position: relative;
+    z-index: 0; /* Un index plus bas que les autres éléments */
+
+}
+
+
+
+#pokemonName {
+    font-family: 'Pokemon Solid', sans-serif; /* Ajoute une police Pokémon */
+    color: #ffffff; /* Bleu de la Pokéball */
+    text-shadow: 2px 2px 4px rgba(255, 0, 0, 0.3);
+}
+
+#waveform {
+    margin-top: -10px;
+    background-color: #353535;
+    border-radius: 8px;
+    padding: 10px;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+#playPause {
+    background-color: #353535; /* Rouge de la Pokéball */
+    color: white;
+    font-weight: bold;
+    padding: 10px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-top: 18px;
+    transition: 0.3s ease-in-out;
+}
+
+#playPause:hover {
+    background-color: #C03028;
+    transform: scale(1.05);
+}
+
+@keyframes glow {
+    0% { box-shadow: 0 0 5px #E63946; }
+    100% { box-shadow: 0 0 20px #E63946; }
+}
+
+#pokemonCryContainer {
+    animation: glow 1s infinite alternate;
+}
 
 .no-dimorphism {
     background: rgb(233, 233, 233);

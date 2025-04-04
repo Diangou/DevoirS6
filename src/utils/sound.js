@@ -43,9 +43,9 @@ export async function setupPokemonCry(pokemonId) {
         // **Créer une nouvelle instance pour éviter les bugs**
         wavesurfer = WaveSurfer.create({
             container: "#waveform",
-            waveColor: "#1E40AF",
-            progressColor: "#3B82F6",
-            cursorColor: "#2563EB",
+            waveColor: "#762000",
+            progressColor: "#E63946",
+            cursorColor: "#222",
             barWidth: 3,
             height: 60,
             responsive: true
@@ -73,3 +73,5 @@ function playPauseHandler() {
         wavesurfer.playPause();
     }
 }
+
+
