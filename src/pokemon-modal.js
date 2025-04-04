@@ -36,6 +36,28 @@ import { listPokemon, setTitleTagForGeneration, hasReachPokedexEnd, rippleEffect
 import loadingImage from "/images/loading.svg";
 import loadingImageRaw from "/images/loading.svg?raw";// Assurez-vous que pokemonName est correctement défini avant d'être utiliséimport { getPokemonCards } from './utils/pokemon-modal.utils.js';
 
+import { displayPokemonCards } from "./utils/pokemon-modal.utils.js";
+
+document.addEventListener("click", (event) => {
+    const pokemonElement = event.target.closest(".pokemon");
+
+    if (!pokemonElement) return;
+
+    event.preventDefault();
+
+    const pkmnName = pokemonElement.getAttribute("data-pokemon-name");
+
+    if (!pkmnName) {
+        console.error("❌ Nom du Pokémon introuvable !");
+        return;
+    }
+
+    console.log(`📛 Pokémon sélectionné : ${pkmnName}`);
+
+    // Affiche les cartes du Pokémon dans la modale
+});
+
+
 
 
 const closeModalBtn = document.querySelector("[data-close-modal]");
@@ -421,6 +443,8 @@ displayModal = async (pkmnData) => {
 
         modal_DOM.listTypes.append(li);
     });
+
+    displayPokemonCards(pkmnData.name.fr);
 
     const firstBorderColor = window.getComputedStyle(document.body).getPropertyValue(`--type-${cleanString(pkmnData.types[0].name)}`);
     const secondaryBorderColor = window.getComputedStyle(document.body).getPropertyValue(`--type-${cleanString(pkmnData.types[1]?.name || "")}`);
