@@ -345,6 +345,8 @@
                     </div>
                 </details>
                 <!-- Exemple d'un Pokémon cliquable -->
+
+                
 <details class="mt-3" id="pokemonCryContainer">
     <summary class="hocus:marker:text-(color:--bg-modal-color) font-bold text-xl">
         Cri du Pokémon
@@ -362,26 +364,24 @@
 <script type="module">
     import { setupPokemonCry } from '/src/utils/sound.js';
 
-    document.addEventListener("DOMContentLoaded", () => {
-        // Sélectionne tous les liens Pokémon générés dynamiquement
-        document.querySelectorAll(".pokemon").forEach(pokemonLink => {
-            pokemonLink.addEventListener("click", (event) => {
-                event.preventDefault(); // Empêche le changement de page
+    // Écouteur d'événements global pour capturer les clics sur les Pokémon dynamiques
+    document.addEventListener("click", (event) => {
+        const pokemonLink = event.target.closest(".pokemon"); // Vérifie si l'élément cliqué est un Pokémon
 
-                // Récupérer l'ID du Pokémon depuis l'attribut `data-pokemon-id`
-                const pkmnId = pokemonLink.getAttribute("data-pokemon-id");
+        if (!pokemonLink) return; // Si ce n'est pas un Pokémon, on ne fait rien
 
-                // Vérification que l'ID est bien récupéré
-                if (!pkmnId) {
-                    console.error("❌ Aucun ID trouvé sur le Pokémon cliqué.");
-                    return;
-                }
+        event.preventDefault(); // Empêche le changement de page
 
-                console.log("✅ ID récupéré :", pkmnId); // Vérifier que l'ID est bien récupéré
+        // Récupérer l'ID du Pokémon
+        const pkmnId = pokemonLink.getAttribute("data-pokemon-id");
 
-                setupPokemonCry(pkmnId); // Charge le cri du Pokémon sélectionné
-            });
-        });
+        if (!pkmnId) {
+            console.error("❌ Aucun ID trouvé sur le Pokémon cliqué.");
+            return;
+        }
+
+        console.log("✅ ID récupéré :", pkmnId); // Vérifier que l'ID est bien récupéré
+        setupPokemonCry(pkmnId); // Charge le cri du Pokémon sélectionné
     });
 </script>
 

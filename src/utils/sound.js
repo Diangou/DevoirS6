@@ -20,7 +20,7 @@ export async function setupPokemonCry(pokemonId) {
             return;
         }
 
-        // Met à jour le titre
+        // Met à jour le titre dans la modal
         document.getElementById("pokemonName").innerText = `Cri de ${pokemonData.name}`;
 
         // Générer l'URL du cri
