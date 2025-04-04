@@ -69,6 +69,8 @@ const loadGenerationBtn = document.querySelector("[data-load-generation]");
 
 const modal_DOM = {
     pkmnName: modal.querySelector("h2"),
+    pkmnNameEN: modal.querySelector("[pokemon-name-en]"),
+    pkmnNameJP: modal.querySelector("[pokemon-name-jp]"),
     img: modal.querySelector("img"),
     category: modal.querySelector("[data-category]"),
     listTypes: modal.querySelector("[data-list-types]"),
@@ -217,7 +219,7 @@ const loadDetailsModal = async (e, region = null) => {
     const pkmnData = JSON.parse(pkmnDataRaw);
 
     const href = $el.href;
-    if(pkmnData.types) {
+    if (pkmnData.types) {
         let rippleColor = window.getComputedStyle(document.body).getPropertyValue(`--type-${cleanString(pkmnData.types[0].name)}`)
         $el.removeAttribute("href");
         if (Math.random() > 0.5 && pkmnData.types[1]) {
@@ -314,7 +316,7 @@ displayModal = async (pkmnData) => {
                 try {
                     const abilityData = await fetchAbilityData(ability.ability.url);
                     listAbilitiesDescriptions.push(getAbilityForLang(abilityData));
-                } catch (_e) {}
+                } catch (_e) { }
             }
         }
 
@@ -351,6 +353,26 @@ displayModal = async (pkmnData) => {
 
     modal_DOM.pkmnName.textContent = `#${String(pkmnData.pokedex_id).padStart(NB_NUMBER_INTEGERS_PKMN_ID, '0')} ${pkmnData.name.fr}`;
     document.title = `${modal_DOM.pkmnName.textContent} - ${initialPageTitle}`;
+
+    // Lien Poképédia
+    const existingLink = modal_DOM.pkmnName.querySelector("a[data-pokepedia-link]");
+    if (existingLink) existingLink.remove(); // éviter les doublons
+
+    const pokepediaLink = document.createElement("a");
+    pokepediaLink.href = `https://www.pokepedia.fr/${encodeURIComponent(pkmnData.name.fr)}`;
+    pokepediaLink.target = "_blank";
+    pokepediaLink.rel = "noopener noreferrer";
+    pokepediaLink.dataset.pokepediaLink = true;
+    pokepediaLink.classList.add("text-blue-600", "underline", "ml-2", "text-sm");
+    pokepediaLink.textContent = "[Poképédia]";
+
+    modal_DOM.pkmnName.appendChild(pokepediaLink);
+
+    
+
+    modal_DOM.pkmnNameEN.textContent = `${pkmnData.name.en}`;
+    modal_DOM.pkmnNameJP.textContent = `${pkmnData.name.jp}`;
+
 
     if (listDescriptions?.is_legendary || listDescriptions?.is_mythical) {
         const cloneHighlight = document.importNode(
@@ -433,11 +455,11 @@ displayModal = async (pkmnData) => {
 
     clearTagContent(modal_DOM.listEvolutions);
     const listEvolutionConditions = [];
-    if(evolutionLine.length > 1) {
+    if (evolutionLine.length > 1) {
         evolutionLine.forEach((evolution, idx) => {
             const li = document.createElement("li");
             const ol = document.createElement("ol");
-            if(evolution.length > 3) {
+            if (evolution.length > 3) {
                 ol.classList.add(...["grid", "grid-cols-1", "sm:grid-cols-2", "lg:grid-cols-3", "gap-y-6"]);
             } else {
                 ol.classList.add(...["flex"]);
@@ -488,7 +510,7 @@ displayModal = async (pkmnData) => {
             modal_DOM.listEvolutions.append(li);
 
             const nextArrow = document.createElement("li");
-            if(evolutionLine.flat().length >= thresholdNbTotalEvolutions) {
+            if (evolutionLine.flat().length >= thresholdNbTotalEvolutions) {
                 nextArrow.textContent = "►";
                 nextArrow.classList.add("justify-center");
             } else {
@@ -661,7 +683,7 @@ displayModal = async (pkmnData) => {
             sexLabel = "female";
         }
 
-        listSprites.push({ name: key, sprite: value, key: sexLabel  });
+        listSprites.push({ name: key, sprite: value, key: sexLabel });
     });
     const groupedSprites = Object.groupBy(listSprites, ({ key }) =>
         key === "female" ? "Femelle ♀" : "Mâle ♂"
@@ -678,7 +700,7 @@ displayModal = async (pkmnData) => {
         if (Object.keys(groupedSprites).length === 1 && !isOneSex) {
             sexLabel.classList.add("no-dimorphism")
         } else {
-            if(key === "Femelle ♀") {
+            if (key === "Femelle ♀") {
                 sexLabel.classList.add(...["bg-pink-300"])
             } else if (key === "Mâle ♂") {
                 sexLabel.classList.add(...["bg-sky-300"])
@@ -691,9 +713,8 @@ displayModal = async (pkmnData) => {
             "[data-list-sprites]"
         );
         sprites.forEach((item) => {
-            const label = `${key} ${
-                Object.keys(groupedSprites).length === 1 && !isOneSex ? "/ Femelle ♀" : ""
-            }`
+            const label = `${key} ${Object.keys(groupedSprites).length === 1 && !isOneSex ? "/ Femelle ♀" : ""
+                }`
             sexLabel.textContent = label;
 
             const pokemonSpriteTemplate = document.importNode(
@@ -725,8 +746,8 @@ displayModal = async (pkmnData) => {
             t.version.name === value.version.name
         ))
     )
-    .map((item) => ({...item, order: Object.keys(getVersionForName).findIndex((game) => item.version.name === game)}))
-    .sort((a, b) => Number(a.order) - Number(b.order));
+        .map((item) => ({ ...item, order: Object.keys(getVersionForName).findIndex((game) => item.version.name === game) }))
+        .sort((a, b) => Number(a.order) - Number(b.order));
 
     listGames.forEach((item) => {
         const li = document.createElement("li");
@@ -767,8 +788,8 @@ displayModal = async (pkmnData) => {
 
         const textContainer = clone.querySelector("p");
         const separator = `${item.name.split(pkmnData.name.en.toLowerCase()).at(-1)}`.substring(1)
-        if(formsNameDict[separator]) {
-            const prefix =  formsNameDict[separator].displayPkmnName ? `${pkmnData.name.fr} ` : "";
+        if (formsNameDict[separator]) {
+            const prefix = formsNameDict[separator].displayPkmnName ? `${pkmnData.name.fr} ` : "";
             textContainer.textContent = `${prefix}${formsNameDict[separator].name}`;
         } else {
             textContainer.textContent = item.name;
@@ -785,7 +806,7 @@ displayModal = async (pkmnData) => {
         const pkmnForm = await fetchPokemon(pkmnData.pokedex_id, item.region);
         const clone = createAlternateForm(
             document.importNode(pkmnTemplateRaw.content, true),
-            {...item, ...pkmnData, ...pkmnForm, sprite: pkmnForm.sprites.regular, varieties: listDescriptions.varieties},
+            { ...item, ...pkmnData, ...pkmnForm, sprite: pkmnForm.sprites.regular, varieties: listDescriptions.varieties },
             loadDetailsModal
         );
 
@@ -803,7 +824,7 @@ displayModal = async (pkmnData) => {
             true
         );
 
-        const { bar, name, value } = createStatisticEntry(clone, {...item, statistics})
+        const { bar, name, value } = createStatisticEntry(clone, { ...item, statistics })
 
         modal_DOM.statistics.append(name);
         modal_DOM.statistics.append(value);
@@ -845,7 +866,7 @@ displayModal = async (pkmnData) => {
 };
 
 window.addEventListener("pokedexLoaded", () => {
-    if(!modal.open) {
+    if (!modal.open) {
         return;
     }
 

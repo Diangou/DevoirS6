@@ -1,6 +1,7 @@
 import {
     fetchPokemonForGeneration,
     fetchPokemon,
+    fetchPokemonExternalData
 } from "#api";
 
 import loadPokemonData from "./pokemon-modal";
@@ -130,11 +131,10 @@ export const rippleEffect = (e, color = "#fff") => {
 const loadDetailsModal = async (e) => {
     e.preventDefault();
 
-    const listPokedexEntries = document.querySelectorAll("[data-pokemon-data]")
+    const listPokedexEntries = document.querySelectorAll("[data-pokemon-data]");
     listPokedexEntries.forEach((item) => { item.inert = true; });
 
     const $el = e.currentTarget;
-
     const pkmnDataRaw = $el.dataset.pokemonData;
     const pkmnData = JSON.parse(pkmnDataRaw);
 
@@ -150,6 +150,26 @@ const loadDetailsModal = async (e) => {
 
     await loadPokemonData(pkmnData);
 
+    // 🆕 AJOUT : mise à jour du panel de numéros régionaux même hors URL
+    try {
+        const externalData = await fetchPokemonExternalData(pkmnData.pokedex_id);
+        const pokedexPanel = document.querySelector("[data-panel-pokedex-numbers]");
+        if (pokedexPanel) {
+            pokedexPanel.innerHTML = "";
+            if (externalData.pokedex_numbers && externalData.pokedex_numbers.length > 0) {
+                externalData.pokedex_numbers.forEach(entry => {
+                    const region = entry.pokedex.name;
+                    const entryNumber = entry.entry_number.toString().padStart(3, "0");
+                    pokedexPanel.innerHTML += `&bull; ${region.charAt(0).toUpperCase() + region.slice(1)} : #${entryNumber}<br>`;
+                });
+            } else {
+                pokedexPanel.innerHTML = "<em>Aucun numéro régional disponible.</em>";
+            }
+        }
+    } catch (error) {
+        console.error("Erreur lors du chargement des numéros régionaux :", error);
+    }
+
     modal.showModal();
 
     const url = new URL(location);
@@ -157,7 +177,7 @@ const loadDetailsModal = async (e) => {
     history.pushState({}, "", url);
 
     listPokedexEntries.forEach((item) => { item.inert = false; });
-}
+};
 
 const generateMarqueeTypes = (e) => {
     if (e.currentTarget.dataset.hasMarqueeTypes) {
@@ -332,22 +352,80 @@ const pkmnId = urlParams.get("id");
 export const observeURL = async () => {
     if (pkmnId !== null) {
         try {
-            const pkmnData = await fetchPokemon(pkmnId, urlParams.get("region"));
+            console.log("ID Pokémon récupéré:", pkmnId);
+
+            // 1. Récupérer les données externes pour avoir la génération
+            const speciesData = await fetchPokemonExternalData(pkmnId);
+            const generationUrl = speciesData.generation.url;
+            const generationId = parseInt(generationUrl.split("/").filter(Boolean).pop());
+
+            console.log("ID génération récupéré:", generationId);
+
+            // 2. Charger toutes les générations de 1 jusqu'à celle du Pokémon
+            for (let i = 1; i <= generationId; i++) {
+                console.log(`Chargement génération ${i}`);
+                await loadPokedexForGeneration(i);
+            }
+
+            // 3. Attente que le Pokémon soit dans le DOM
+            const waitForPokemonInDOM = () => new Promise((resolve, reject) => {
+                const maxWait = 3000;
+                const interval = 100;
+                let waited = 0;
+
+                const check = () => {
+                    const target = document.querySelector(`[data-pokemon-id="${parseInt(pkmnId)}"]`);
+                    if (target) return resolve(target);
+                    waited += interval;
+                    if (waited >= maxWait) return reject("Timeout: Pokémon introuvable dans le DOM");
+                    setTimeout(check, interval);
+                };
+                check();
+            });
+
+            const targetElement = await waitForPokemonInDOM();
+
+            // 4. Récupération des données et affichage de la modale
+            const rawData = targetElement.dataset.pokemonData;
+            const pkmnData = JSON.parse(rawData);
             pkmnData.alternate_form_id = urlParams.get("alternate_form_id");
 
             await loadPokemonData(pkmnData);
             modal.showModal();
-        } catch (_e) {
+
+            // 5. Afficher les numéros Pokédex par région
+            const externalData = await fetchPokemonExternalData(pkmnId);
+            const pokedexPanel = document.querySelector("[data-panel-pokedex-numbers]");
+            if (pokedexPanel) {
+                pokedexPanel.innerHTML = "";
+                if (externalData.pokedex_numbers && externalData.pokedex_numbers.length > 0) {
+                    pokedexPanel.innerHTML = ``;
+                    externalData.pokedex_numbers.forEach(entry => {
+                        const region = entry.pokedex.name;
+                        const entryNumber = entry.entry_number.toString().padStart(3, "0");
+                        pokedexPanel.innerHTML += `&bull; ${region.charAt(0).toUpperCase() + region.slice(1)} : #${entryNumber}<br>`;
+                    });
+                } else {
+                    pokedexPanel.innerHTML = "<em>Aucun numéro régional disponible.</em>";
+                }
+            }
+
+        } catch (error) {
+            console.error(error);
             modal.close();
-            errorMessageContainer.textContent = `Le Pokémon avec l'id "${pkmnId}" n'existe pas`;
+            errorMessageContainer.textContent = `Le Pokémon avec l'id "${pkmnId}" n'existe pas ou n'a pas pu être affiché.`;
             errorPopover.dataset.error = POPOVER_ERRORS.unknown_pkmn;
             errorPopover.showPopover();
         }
+    } else {
+        // Si pas d'ID dans l'URL, on charge la génération 1
+        await loadPokedexForGeneration(1);
     }
-}
+};
 
 await observeURL();
-await loadPokedexForGeneration(1);
+
+
 
 delegateEventHandler(document, "click", "[data-load-generation]", (e) => {
     loadPokedexForGeneration(e.target.dataset.loadGeneration, e.target.dataset.selfDelete === "" ? e.target : null);
