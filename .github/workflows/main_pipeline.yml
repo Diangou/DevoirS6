@@ -31,9 +31,6 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
   
-      - name: Run E2E tests without web server
-        run: npx playwright test --no-web-server
-
       - name: Run E2E tests
         run: npm run e2e
         
