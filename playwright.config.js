@@ -6,7 +6,7 @@ import { defineConfig, devices } from "@playwright/test";
  */
 // require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 
-const baseURL = "http://localhost:9323/";
+const baseURL = "http://localhost:5173";
 
 /**
  * @see https://playwright.dev/docs/test-configuration
@@ -74,7 +74,6 @@ export default defineConfig({
     webServer: {
         command: "npm run dev",
         url: baseURL,
-        reuseExistingServer: true, // Permet à Playwright d'utiliser un serveur déjà existant
-        timeout: 120 * 1000,
+        reuseExistingServer: !process.env.CI,
     },
 });
