@@ -30,14 +30,10 @@ jobs:
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
+  
+      - name: Run E2E tests without web server
+        run: npx playwright test --no-web-server
 
       - name: Run E2E tests
         run: npm run e2e
-
-      - name: Wait for server to be ready
-        run: npx wait-on http://localhost:5173
-
-      - name: Run Playwright tests with debug logs
-        run: DEBUG=pw:browser* npx playwright test
-
         
