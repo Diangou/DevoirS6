@@ -74,6 +74,7 @@ export default defineConfig({
     webServer: {
         command: "npm run dev",
         url: baseURL,
-        reuseExistingServer: !process.env.CI,
+        reuseExistingServer: true, // Permet à Playwright d'utiliser un serveur déjà existant
+        timeout: 120 * 1000,
     },
 });
