@@ -12,7 +12,7 @@ describe("getVersionForName", () => {
 
 describe("cleanString", () => {
     it("should remove all accents and lowercase string", () => {
-        expect(cleanString("Stéphane")).toBe("stéphane");
+        expect(cleanString("Stéphane")).toBe("stephane");
     });
 });
 
