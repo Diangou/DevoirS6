@@ -31,11 +31,5 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
-      - name: Kill existing server processes
-        run: fuser -k 9323/tcp || true
-
-      - name: Start server on correct port
-        run: PORT=9323 npm run dev & npx wait-on http://localhost:9323
-
       - name: Run E2E tests
         run: npx playwright test
