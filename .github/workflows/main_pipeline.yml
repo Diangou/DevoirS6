@@ -32,10 +32,10 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: Kill existing server processes
-        run: fuser -k 5173/tcp || true
+        run: fuser -k 9323/tcp || true
 
-      - name: Start server
-        run: npm run dev & npx wait-on http://localhost:5173
+      - name: Start server on correct port
+        run: PORT=9323 npm run dev & npx wait-on http://localhost:9323
 
       - name: Run E2E tests
-        run: npm run e2e
+        run: npx playwright test

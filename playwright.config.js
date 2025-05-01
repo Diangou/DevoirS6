@@ -6,7 +6,7 @@ import { defineConfig, devices } from "@playwright/test";
  */
 // require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 
-const baseURL = "http://localhost:5173";
+const baseURL = "http://localhost:9323/";
 
 /**
  * @see https://playwright.dev/docs/test-configuration
