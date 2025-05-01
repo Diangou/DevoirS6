@@ -1,10 +1,9 @@
 import axios from 'axios'; // Importer axios
-import { config } from '../config.js';  // Importer la config
 
 const GITHUB_API = "https://api.github.com";
 const OWNER = "Diangou";  // Remplace par ton nom d'utilisateur GitHub
 const REPO = "DevoirS6";  // Remplace par le nom de ton repository
-const TOKEN = config.GITHUB_TOKEN;  // Utiliser le token de config
+const TOKEN = import.meta.env.VITE_GITHUB_TOKEN;  // On récupère la variable d'environnement
 
 async function fetchCollaborators() {
     try {
