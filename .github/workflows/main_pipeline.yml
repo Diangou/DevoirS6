@@ -28,8 +28,18 @@ jobs:
       - name: Run Unit Tests
         run: npm run test
 
+      - name: Cache Playwright browsers
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright
+          restore-keys: |
+            ${{ runner.os }}-playwright
+
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
       - name: Run E2E tests
-        run: npx playwright test --workers=1 --timeout=60000
+        run: npx playwright test --workers=4 --timeout=60000
+        env:
+          PWDEBUG: 0
