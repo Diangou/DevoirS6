@@ -39,7 +39,14 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
+      - name: Check API availability
+        run: curl --retry 5 --retry-delay 10 --fail https://tyradex.vercel.app/api/v1/pokemon/25 || exit 1
+
+      - name: Wait before running tests
+        run: sleep 10  # Attendre quelques secondes pour éviter les blocages
+
       - name: Run E2E tests
-        run: npx playwright test --workers=4 --timeout=60000
+        run: npx playwright test --workers=4 --timeout=90000
         env:
           PWDEBUG: 0
+          PLAYWRIGHT_TEST_TIMEOUT: 120000
