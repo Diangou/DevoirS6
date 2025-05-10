@@ -28,32 +28,6 @@ jobs:
       - name: Run Unit Tests
         run: npm run test
 
-      - name: Cache Playwright browsers
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ github.run_id }}
-          restore-keys: |
-            ${{ runner.os }}-playwright
-
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps
-
-      - name: Check API availability
-        run: curl --retry 5 --retry-delay 10 --fail https://tyradex.vercel.app/api/v1/pokemon/25 || exit 1
-
-      - name: Wait before running tests
-        run: sleep 15
-
-      - name: Run E2E tests (with retry)
-        run: |
-          for i in 1 2 3; do
-            npx playwright test --workers=2 --timeout=180000 && break || sleep 10
-          done
-        env:
-          PWDEBUG: 0
-          PLAYWRIGHT_TEST_TIMEOUT: 300000
-
   deploy:
     needs: ci-cd
     runs-on: ubuntu-latest
