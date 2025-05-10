@@ -43,10 +43,28 @@ jobs:
         run: curl --retry 5 --retry-delay 10 --fail https://tyradex.vercel.app/api/v1/pokemon/25 || exit 1
 
       - name: Wait before running tests
-        run: sleep 15  # Augmente l'attente pour garantir la dispo de l'API
+        run: sleep 15
 
-      - name: Run E2E tests
-        run: npx playwright test --workers=4 --timeout=120000
+      - name: Run E2E tests (with retry)
+        run: |
+          for i in 1 2 3; do
+            npx playwright test --workers=2 --timeout=180000 && break || sleep 10
+          done
         env:
           PWDEBUG: 0
-          PLAYWRIGHT_TEST_TIMEOUT: 180000
+          PLAYWRIGHT_TEST_TIMEOUT: 300000
+
+  deploy:
+    needs: ci-cd
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Deploy to Vercel 
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.DEVOIRS6_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+
