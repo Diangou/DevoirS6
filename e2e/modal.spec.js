@@ -1,38 +1,18 @@
 import { test, expect } from "@playwright/test";
-import pokedex from "../__mocks__/pokedex"; // Import du mock existant
 
 test("should open modal", { tag: "@smoke" }, async ({ page }) => {
-    await page.route('**/api/pokedex', async (route) => {
-        await route.fulfill({
-            status: 200,
-            contentType: 'application/json',
-            body: JSON.stringify(pokedex.find(p => p.pokedex_id === 8))
-        });
-    });
-
     await page.goto("/");
-
     const firstPkmn = await page.getByTestId("pokemon").first();
     const firstPkmnDataRaw = await firstPkmn.getAttribute("data-pokemon-data");
     const firstPkmnData = JSON.parse(firstPkmnDataRaw);
-    await firstPkmn.click();
+    firstPkmn.click();
 
-    await page.waitForTimeout(500);
-    await page.waitForSelector("html:not(.cursor-progress)", { timeout: 15000 });
-    await page.waitForSelector("[data-testid='pokemon-modal'][open]", { timeout: 15000 });
+    const modal = page.locator("[data-testid='pokemon-modal'][open]");
+    await modal.waitFor();
 
-    // Debugging : Vérifier le titre avant l'attente
-    console.log("Titre actuel AVANT attente :", await page.title());
-    console.log("HTML complet de la page:", await page.content());
-
-    // Attente que le titre change
-    await page.waitForFunction(() => {
-        return document.title !== "Chargement - Pokédex v1.0.0";
-    }, { timeout: 15000 });
-
-    await expect(page).toHaveTitle(new RegExp(String.raw`${firstPkmnData.name.fr}`, "i"));
-
-    console.log("Titre après attente :", await page.title());
+    await expect(page).toHaveTitle(
+        new RegExp(String.raw`${firstPkmnData.name.fr}`, "g")
+    );
 });
 
 test("should close modal", async ({ page }) => {
