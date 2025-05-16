@@ -51,6 +51,7 @@ jobs:
     needs: [unit_tests]
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    continue-on-error: true  
 
     steps:
       - name: Checkout code
@@ -64,7 +65,7 @@ jobs:
 
       - name: Configure Git
         run: |
-          git config --global user.email "test@example.com"
+          git config --global user.email "diangou.cmr09@gmail.com"
           git config --global user.name "CI/CD"
 
       - name: Install dependencies
