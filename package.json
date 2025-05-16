@@ -10,7 +10,7 @@
         "build": "vite build && rsync -am --include='*.php' --include='**/*.php' --exclude='*' ./ dist/",
         "lint": "npx eslint",
         "preview": "vite preview",
-        "e2e": "npx playwright test --reporter=line --timeout=60000"
+        "e2e": "npx playwright test"
     },
     "devDependencies": {
         "@babel/core": "^7.26.0",
