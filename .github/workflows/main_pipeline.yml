@@ -7,35 +7,37 @@ on:
     branches: [main]
 
 jobs:
-  e2e_tests:
-    name: Run end-to-end tests
-    runs-on: ubuntu-latest
-    timeout-minutes: 45 # Stop job after 45 minutes of inactivity
-    steps:
-      - name: Check out repository code
-        uses: actions/checkout@v4
+e2e_tests: 
+  name: Run end-to-end tests
+  runs-on: ubuntu-latest
+  timeout-minutes: 45
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Set GitHub user
-        run: |
-          git config user.email "test@example.com"
-          git config user.name "CI/CD"
+    - name: Setup Node.js with cache
+      uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+        cache: 'npm'
 
-      - name: Install the dependencies
-        run: npm ci
+    - name: Configure Git
+      run: |
+        git config --global user.email "test@example.com"
+        git config --global user.name "CI/CD"
 
-      - name: Install Playwright
-        run: npx playwright install --with-deps
+    - name: Install dependencies
+      run: npm ci
 
-      - name: Run smoke tests
-        run: npx playwright test --project=chromium --grep @smoke
+    - name: Install Playwright browsers
+      run: npx playwright install --with-deps
 
-      - name: Run non-smoke tests
-        run: npx playwright test --project=chromium --grep-invert @smoke
+    - name: Run smoke tests
+      run: npx playwright test --project=chromium --grep @smoke
+
+    - name: Run other tests
+      run: npx playwright test --project=chromium --grep-invert @smoke
 
   unit_tests:
     name: Run unit tests
