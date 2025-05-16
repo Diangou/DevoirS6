@@ -1,44 +1,47 @@
-name: Main Pipeline
+name: Deploy
+
+run-name: ${{ github.actor }} is deploying 🚀
 
 on:
-  pull_request:
-    branches: [main]
-  push:
-    branches: [main]
+  workflow_dispatch:
+  # push:
 
 jobs:
-  ci-cd:
+  ## Two next jobs can be merged, but not a good idea
+  e2e_tests:
+    name: Run end-to-end tests
     runs-on: ubuntu-latest
-
+    timeout-minutes: 45 # Stop job after 45 minutes of inactivity
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 20
-
-      - name: Install dependencies
+          node-version: lts/*
+      - name: Set github user
+        run: git config user.email "test@example.com" && git config user.name "CI/CD"
+      - name: Install the dependencies
         run: npm ci
+      - name: Install playwright
+        run: npx playwright install --with-deps
+      - name: Run smoke tests
+        run: npx playwright test --project=chromium --grep @smoke
+      - name: Run non-smoke tests
+        run: npx playwright test --project=chromium --grep-invert @smoke
 
-      - name: Run ESLint
-        run: npm run lint
-
-      - name: Run Unit Tests
-        run: npm run test
-
-  deploy:
-    needs: ci-cd
+  unit_tests:
+    name: Run unit tests
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      
-      - name: Deploy to Vercel  
-        uses: amondnet/vercel-action@v25
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          vercel-token: ${{ secrets.DEVOIRS6_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-
+          node-version: lts/*
+      - name: Set github user
+        run: git config --global user.email "test@example.com" && git config --global user.name "CI/CD"
+      - name: Install the dependencies
+        run: npm ci
+      - name: Run unit tests
+        run: npm run test --if-present
