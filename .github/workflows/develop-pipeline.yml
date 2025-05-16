@@ -1,0 +1,88 @@
+name: Deploy Develop Branch
+
+on:
+  push:
+    branches:
+      - develop
+  pull_request:
+    branches:
+      - develop
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Select environment for deploy'
+        required: false
+        default: 'dev-server'
+        type: choice
+        options:
+          - dev-server
+          - staging-server
+
+jobs:
+  lint:
+    name: ESLint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      - run: npm ci
+      - run: npm run lint
+
+  unit_tests:
+    name: Unit Tests
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      - run: npm ci
+      - run: npm run test
+
+  e2e_tests:
+    name: End-to-End Tests
+    needs: unit_tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    continue-on-error: true  
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps
+      - run: npx playwright test --project=chromium --grep @smoke
+      - run: npx playwright test --project=chromium --grep-invert @smoke
+
+  deploy:
+    name: Deploy to Server
+    needs: [e2e_tests]
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.event.inputs.environment || 'dev-server' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up SSH agent
+        uses: webfactory/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Create remote folder for branch
+        run: |
+          ssh -o StrictHostKeyChecking=no user@your-server "
+            mkdir -p /var/www/${{ github.ref_name }} &&
+            echo 'Deploying branch ${{ github.ref_name }} to /var/www/${{ github.ref_name }}'
+          "
+
+      - name: Rsync files to remote folder
+        run: |
+          rsync -avz --delete ./ user@your-server:/var/www/${{ github.ref_name }}/
+
+      - name: Show deployed branch
+        run: echo "Branch deployed: ${{ github.ref_name }}"
