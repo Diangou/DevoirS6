@@ -638,3 +638,17 @@ details {
 .pokedex.grid-cols-1 [data-types-list] {
   margin-top: 0.5rem;
 }
+
+footer {
+    background-color: #f9fafb;
+    transition: background-color var(--duration-300);
+}
+
+footer:hover {
+    background-color: #f3f4f6;
+}
+
+footer img {
+    max-height: 50px;
+    object-fit: contain;
+}

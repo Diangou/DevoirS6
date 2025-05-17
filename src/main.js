@@ -478,3 +478,44 @@ window.addEventListener("offline", () => {
 });
 
 export { loadPokedexForGeneration };
+
+// Fonctionnalité de cyclage des logos
+const cyLogo = document.getElementById('cy-logo');
+const cycleLogo = document.getElementById('cycle-logo');
+
+const cyLogos = [
+    '/images/CY Cergy Paris Universite_coul.png',
+    '/images/CY Cergy Paris Universite_Noir.png',
+    '/images/CY IUT_coul.png',
+    '/images/CY IUT_hachures_Noir.png'
+];
+
+let currentLogoIndex = 0;
+
+// Gestion des erreurs
+const handleLogoError = (event) => {
+    console.error(`Failed to load logo: ${event.target.src}`);
+    // Retour à la première image qui fonctionne
+    event.target.src = cyLogos[0];
+    currentLogoIndex = 0;
+};
+
+// Ajout de l'écouteur d'erreur à l'élément logo
+cyLogo.addEventListener('error', handleLogoError);
+
+cycleLogo.addEventListener('click', () => {
+    currentLogoIndex = (currentLogoIndex + 1) % cyLogos.length;
+    // Utilisation de encodeURI pour gérer les espaces et les caractères spéciaux dans les noms de fichiers
+    cyLogo.src = encodeURI(cyLogos[currentLogoIndex]);
+    
+    // Ajout d'un effet de fade simple
+    cyLogo.classList.add('opacity-0');
+    setTimeout(() => {
+        cyLogo.classList.remove('opacity-0');
+    }, 50);
+    
+    console.log(`Loading logo: ${cyLogos[currentLogoIndex]}`);
+});
+
+// Ajoute une transition pour l'effet de fade
+cyLogo.classList.add('transition-opacity', 'duration-300');
