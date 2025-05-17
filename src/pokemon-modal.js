@@ -34,26 +34,30 @@ import modalPulldownClose from "#src/modal-pulldown-close.js"
 
 import { listPokemon, setTitleTagForGeneration, hasReachPokedexEnd, rippleEffect } from "./main";
 import loadingImage from "/images/loading.svg";
-import loadingImageRaw from "/images/loading.svg?raw";// Assurez-vous que pokemonName est correctement défini avant d'être utilisé
-import { getPokemonCards } from './utils/pokemon-modal.utils.js';
+import loadingImageRaw from "/images/loading.svg?raw";// Assurez-vous que pokemonName est correctement défini avant d'être utiliséimport { getPokemonCards } from './utils/pokemon-modal.utils.js';
 
-async function displayPokemonCards(pokemonName) {
-  const cards = await getPokemonCards(pokemonName);
+import { displayPokemonCards } from "./utils/pokemon-modal.utils.js";
 
-  const container = document.getElementById('pokemon-cards-container');
-  container.innerHTML = ''; // Vider le conteneur avant d'ajouter les cartes
+document.addEventListener("click", (event) => {
+    const pokemonElement = event.target.closest(".pokemon");
 
-  cards.forEach(card => {
-    const imgElement = document.createElement('img');
-    imgElement.src = card.imageUrl; // URL de l'image de la carte
-    imgElement.alt = `Carte Pokémon ${card.name}`;
-    imgElement.classList.add('pokemon-card-image');
-    container.appendChild(imgElement);
-  });
-}
+    if (!pokemonElement) return;
 
-// Exemple d'appel de fonction pour afficher les cartes de "Pikachu"
-displayPokemonCards('Pikachu');
+    event.preventDefault();
+
+    const pkmnName = pokemonElement.getAttribute("data-pokemon-name");
+
+    if (!pkmnName) {
+        console.error("❌ Nom du Pokémon introuvable !");
+        return;
+    }
+
+    console.log(`📛 Pokémon sélectionné : ${pkmnName}`);
+
+    // Affiche les cartes du Pokémon dans la modale
+});
+
+
 
 
 const closeModalBtn = document.querySelector("[data-close-modal]");
@@ -439,6 +443,8 @@ displayModal = async (pkmnData) => {
 
         modal_DOM.listTypes.append(li);
     });
+
+    displayPokemonCards(pkmnData.name.fr);
 
     const firstBorderColor = window.getComputedStyle(document.body).getPropertyValue(`--type-${cleanString(pkmnData.types[0].name)}`);
     const secondaryBorderColor = window.getComputedStyle(document.body).getPropertyValue(`--type-${cleanString(pkmnData.types[1]?.name || "")}`);

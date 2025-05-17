@@ -1,35 +1,34 @@
-async function fetchPokemonCards(pokemonName) {
-    const cachedCards = localStorage.getItem(pokemonName); // Vérifier si les cartes sont déjà en cache
-  
-    if (cachedCards) {
-      // Si les cartes sont en cache, les afficher
-      displayCards(JSON.parse(cachedCards));
-    } else {
-      const response = await fetch(`https://api.tcgdex.net/v2/cards?name=${pokemonName}&language=fr`);
-      const data = await response.json();
-      
-      if (data.data) {
-        localStorage.setItem(pokemonName, JSON.stringify(data.data)); // Mettre en cache la réponse
-        displayCards(data.data); // Afficher les cartes
-      } else {
-        console.log("Aucune carte trouvée pour ce Pokémon");
-      }
+import axios from "axios";
+
+// L'URL de l'API pour récupérer les cartes Pokémon
+const BASE_URL = "https://api.tcgdex.net/v2/fr/cards?name=";
+
+const tcgdexCache = new Map();
+
+export async function fetchPokemonCards(pokemonName) {
+    const cacheKey = `tcgdex-card-${pokemonName}`;
+
+    if (tcgdexCache.has(cacheKey)) {
+        return tcgdexCache.get(cacheKey);
     }
-  }
-  
-  function displayCards(cards) {
-    const container = document.getElementById('pokemon-cards-container');
-    container.innerHTML = ''; // Vider le conteneur avant de l'injecter
-  
-    cards.forEach(card => {
-      const imgElement = document.createElement('img');
-      imgElement.src = card.images.large; // Utiliser l'URL de l'image de la carte
-      imgElement.alt = `Carte Pokémon ${card.name}`;
-      imgElement.classList.add('pokemon-card-image');
-      container.appendChild(imgElement);
-    });
-  }
-  
-  // Exemple d'appel de fonction pour récupérer les cartes d'un Pokémon (ex. Pikachu)
-  fetchPokemonCards('pikachu');
-  
+
+    try {
+        console.log(`🔍 Recherche des cartes pour ${pokemonName}...`);
+
+        const response = await axios.get(`${BASE_URL}${encodeURIComponent(pokemonName)}`);
+
+        console.log("📦 Réponse API complète :", response.data);
+
+        // On filtre les cartes qui ont une image valide
+        const cards = (response.data || []).filter(card => card.image);
+
+        console.log("🎴 Cartes récupérées après filtrage :", cards);
+
+        tcgdexCache.set(cacheKey, cards);
+        return cards;
+    } catch (error) {
+        console.error("❌ Erreur API TCGDex :", error);
+        return [];
+    }
+}
+

@@ -6,36 +6,32 @@ import {
 } from "#utils";
 
 import loadingImageRaw from "/images/loading.svg?raw";
-export async function getPokemonCards(pokemonName) {
-    const cachedCards = localStorage.getItem(pokemonName);
 
-    if (cachedCards) {
-      return JSON.parse(cachedCards);
-    } else {
-      // Utilisation de l'API pour récupérer les données de la carte
-      const response = await fetch(`https://api.tcgdex.net/v2/cards?name=${pokemonName}`);
-      const data = await response.json();
+import { fetchPokemonCards } from "../api/tcgdex.js";
 
-      if (data.data) {
-        // Créer des URLs pour les images de cartes
-        const cards = data.data.map(card => {
-          return {
-            name: card.name,
-            imageUrl: `https://assets.tcgdex.net/${card.set.language}/${card.set.id}/${card.id}/high.jpg`
-          };
-        });
+export async function displayPokemonCards(pokemonName) {
+    const container = document.getElementById("cardsDisplay");
 
-        // Cache des cartes
-        localStorage.setItem(pokemonName, JSON.stringify(cards));
-
-        return cards;
-      } else {
-        console.log("Aucune carte trouvée pour ce Pokémon");
-        return [];
-      }
+    if (!container) {
+        console.error("❌ Conteneur des cartes introuvable !");
+        return;
     }
-}
 
+    container.innerHTML = `<p>🔄 Chargement des cartes...</p>`;
+
+    const cards = await fetchPokemonCards(pokemonName);
+
+    if (cards.length === 0) {
+        container.innerHTML = `<p>❌ Aucune carte trouvée.</p>`;
+        return;
+    }
+
+    container.innerHTML = cards
+    .map(card => {
+        return `<img src="${card.image}/low.png" alt="Carte Pokémon ${pokemonName}" class="w-32 h-auto rounded-lg shadow-md">`;
+    })
+    .join("");
+}
 
 export const pkmnHighlightTemplateRaw = document.querySelector(
     "[data-tpl-id='pokemon-highlight']"

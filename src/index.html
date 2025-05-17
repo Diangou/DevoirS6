@@ -25,8 +25,9 @@
         </div>
         <header class="py-2 bg-slate-900 text-white">
             <div class="mr-[max(env(safe-area-inset-right),_theme(space.3))] ml-[max(env(safe-area-inset-left),_theme(space.3))]">
-                <div class="mx-auto max-w-6xl">
+                <div class="flex flex-row justify-between mx-auto max-w-6xl">
                     <h1>Pokédex v%VERSION% - TP CI/CD</h1>
+                    <a class="px-6 rounded-lg hover:bg-gray-600" href="admin/">Admin</a>
                 </div>
             </div>
         </header>
@@ -260,7 +261,7 @@
             class="pkmn-details-dialog backdrop:backdrop-blur-(--details-modal-blur) backdrop:bg-slate-400/50 overscroll-y-contain bg-white rounded-lg md:my-8 w-11/12 sm:max-w-4xl border-2 border-solid mx-auto"
         >
             <header
-                class="main-infos border-b text-black pb-4 mb-3 md:sticky landscape:static landscape:lg:sticky top-0"
+                class="main-infos border-b text-black pb-4 mb-3 md:sticky landscape:static landscape:lg:sticky top-0 z-10"
             >
             <div class="infinite-header-bg bg-white"></div>
                 <div class="sticky-header relative px-4 bg-white top-0 pt-2 pb-3 border-black border-solid border-b" data-top-infos>
@@ -332,13 +333,65 @@
                 </div>
             </header>
             <div class="px-4 text-black">
+                        
+<details class="mt-3" id="pokemonCryContainer">
+    <summary id="pokemonName" class="pokemon-cry-summary hocus:marker:text-(color:--bg-modal-color) font-bold text-xl">
+        Cri du Pokémon
+    </summary>
+    <div class="mt-3 flex flex-col items-center justify-center p-4 rounded-lg ">
+        <div id="waveform" class="w-full max-w-md bg-white p-2 rounded-md shadow"></div>
+        <button id="playPause" class="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+            Jouer/Pause
+        </button>
+    </div>
+</details>
+<script type="module">
+    import { setupPokemonCry } from '/src/utils/sound.js';
+
+    // Écouteur d'événements global pour capturer les clics sur les Pokémon dynamiques
+    document.addEventListener("click", (event) => {
+        const pokemonLink = event.target.closest(".pokemon"); // Vérifie si l'élément cliqué est un Pokémon
+
+        if (!pokemonLink) return; // Si ce n'est pas un Pokémon, on ne fait rien
+
+        event.preventDefault(); // Empêche le changement de page
+
+        // Récupérer l'ID du Pokémon
+        const pkmnId = pokemonLink.getAttribute("data-pokemon-id");
+
+        if (!pkmnId) {
+            console.error("❌ Aucun ID trouvé sur le Pokémon cliqué.");
+            return;
+        }
+
+        console.log("✅ ID récupéré :", pkmnId); // Vérifier que l'ID est bien récupéré
+        setupPokemonCry(pkmnId); // Charge le cri du Pokémon sélectionné
+    });
+</script>
+
+<script type="module">
+    import { setupPokemonCry } from '/src/utils/sound.js';
+
+    window.addEventListener("DOMContentLoaded", () => {
+        const pkmnId = document.body.dataset.currentPokemonId || new URLSearchParams(window.location.search).get("id");
+
+        if (pkmnId) {
+            console.log("🌍 Détection via dataset ou URL, ID Pokémon :", pkmnId);
+            setupPokemonCry(pkmnId); // Joue le cri du Pokémon directement
+        } else {
+            console.warn("❌ Aucun ID trouvé via dataset ou URL.");
+        }
+    });
+</script>
+
+
                 <details class="mt-3">
                     <summary class="hocus:marker:text-(color:--bg-modal-color) font-bold text-xl">
                         Numéros Pokédex par région
                     </summary>
                     <div
                         data-panel-pokedex-numbers
-                       
+                       class="columns-2"
                     >
                         <p class="italic">Chargement...</p>
                     </div>
@@ -385,28 +438,6 @@
                         </ul>
                     </div>
                 </details>
-                <details class="mt-3">
-                    <summary class="hocus:marker:text-(color:--bg-modal-color) font-bold text-xl">
-                        Cri du Pokémon
-                    </summary>
-                    <div class="mt-3 flex flex-col items-center justify-center p-4 bg-gray-100 rounded-lg shadow-md">
-                        <h2 class="text-lg font-semibold text-gray-700">Cri du Pokémon</h2>
-                        <div id="waveform" class="w-full max-w-md bg-white p-2 rounded-md shadow"></div>
-                        <button id="playPause" class="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-                            Jouer/Pause
-                        </button>
-                    </div>
-                </details>
-                
-                <script type="module">
-                    import { setupWaveSurfer } from '/src/utils/sound.js';
-                    
-                    setupWaveSurfer('pikachu'); // Remplace par le vrai nom du Pokémon sélectionné
-                </script>
-                
-
-                
-                
                 <details class="mt-3 max-w @container/sensibilities">
                     <summary class="hocus:marker:text-(color:--bg-modal-color) font-bold text-xl">
                         Sensibilités
@@ -450,18 +481,62 @@
                         data-list-games=""
                     ></ul>
                 </details>
-                <details class="mt-3">
-                    <summary class="hocus:marker:text-(color:--bg-modal-color) font-bold text-xl">
-                      Cartes Pokémon <span data-nb-pokemon-cards></span>
+                <details class="mt-3" id="pokemonCardsContainer">
+                    <summary class="pokemon-cards-summary font-bold text-xl">
+                        Cartes du Pokémon
                     </summary>
-                    <div id="pokemon-cards-container" class="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                      <!-- Les cartes Pokémon seront injectées ici dynamiquement -->
-                      <img class="pokemon-card-image" src="" alt="Carte Pokémon">
+                    <div id="cardsDisplay" class="mt-3 flex flex-wrap justify-center gap-4 p-4 rounded-lg">
+                        <!-- Les cartes seront injectées ici -->
                     </div>
-                  </details>
-                  
-                  
+                </details>
+                <script type="module">
+                    import { fetchPokemonCards } from '/src/api/tcgdex.js';
                 
+                    document.addEventListener("click", async (event) => {
+                        const pokemonLink = event.target.closest(".pokemon");
+                        if (!pokemonLink) return;
+                
+                        event.preventDefault();
+                
+                        const pkmnName = pokemonLink.getAttribute("data-pokemon-name");
+                        console.log("✅ Nom du Pokémon récupéré :", pkmnName); // Log du nom du Pokémon
+                
+                        if (!pkmnName) {
+                            console.error("❌ Aucun nom trouvé sur le Pokémon cliqué.");
+                            return;
+                        }
+                
+                        const container = document.getElementById("cardsDisplay");
+                        if (!container) {
+                            console.error("❌ Conteneur des cartes introuvable !");
+                            return;
+                        }
+                
+                        container.innerHTML = `<p>🔄 Chargement des cartes...</p>`;
+                
+                        try {
+                            const cards = await fetchPokemonCards(pkmnName);
+                            console.log("📦 Cartes récupérées :", cards);
+                
+                            if (!cards || cards.length === 0) {
+                                container.innerHTML = `<p>❌ Aucune carte trouvée.</p>`;
+                                return;
+                            }
+                
+                            container.innerHTML = cards
+    .map(card => {
+        return `<img src="${card.image}/low.png" alt="Carte Pokémon ${pkmnName}" class="w-32 h-auto rounded-lg shadow-md">`;
+    })
+    .join("");
+                
+                        } catch (error) {
+                            console.error("❌ Erreur lors du chargement des cartes :", error);
+                            container.innerHTML = `<p>❌ Erreur lors du chargement des cartes.</p>`;
+                        }
+                    });
+                </script>
+                
+                             
             <nav class="text-black">
                 <ul class="my-3 px-4 py-3 flex flex-col sm:flex-row gap-6 justify-center" data-list-siblings-pokemon>
                 </ul>
