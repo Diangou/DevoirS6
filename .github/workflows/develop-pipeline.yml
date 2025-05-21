@@ -25,7 +25,7 @@ jobs:
       - name: Lint du code avec ESLint
         run: npm run lint
 
-      - name: Migrer la base de données
+      - name: Migrer la base de donnéesE
         run: npm run migrate
 
       - name: Afficher la branche déployée
