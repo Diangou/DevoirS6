@@ -25,7 +25,7 @@ jobs:
         run: npx vitest run
 
       - name: Upload Vitest HTML Report
-        if: always() # même si tests échouent
+        if: always() # même si tests échouent test
         uses: actions/upload-artifact@v4
         with:
           name: vitest-html-report
