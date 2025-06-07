@@ -1,49 +1,44 @@
 import axios from 'axios'; // Importer axios
 
 const GITHUB_API = "https://api.github.com";
-const OWNER = "Diangou";  // Remplace par ton nom d'utilisateur GitHub
-const REPO = "DevoirS6";  // Remplace par le nom de ton repository
-const TOKEN = import.meta.env.VITE_GITHUB_TOKEN;  // On récupère la variable d'environnement
+const CONTRIBUTORS = ["Diangou", "jhermaine14", "AODAMA"];
 
 async function fetchCollaborators() {
     try {
-        // Prépare l'en-tête de la requête avec le token d'authentification
-        const headers = TOKEN ? { Authorization: `Bearer ${TOKEN}` } : {};
-
-        // Envoie la requête pour récupérer la liste des collaborateurs
-        const res = await axios.get(`${GITHUB_API}/repos/${OWNER}/${REPO}/collaborators`, { headers });
-
-        const collaborators = res.data;
-
-        // Récupère les données des utilisateurs
+        // Récupère les données des utilisateurs spécifiques
         const usersData = await Promise.all(
-            collaborators.map(async (user) => {
-                const userRes = await axios.get(`${GITHUB_API}/users/${user.login}`);
+            CONTRIBUTORS.map(async (username) => {
+                const userRes = await axios.get(`${GITHUB_API}/users/${username}`);
                 return userRes.data;
             })
         );
 
-        // Affiche les collaborateurs sur la page
+        // Affiche les contributeurs sur la page
         displayContributors(usersData);
     } catch (error) {
-        console.error("❌ Erreur lors de la récupération des collaborateurs :", error);
+        console.error("❌ Erreur lors de la récupération des contributeurs :", error);
     }
 }
 
 function displayContributors(users) {
     const container = document.getElementById("contributors");
-    container.innerHTML = "";  // Vide le container avant d'ajouter les nouveaux contributeurs
+    if (!container) return;
+    
+    container.innerHTML = "";
+    container.className = "flex flex-wrap justify-center gap-4 p-4";
 
     // Crée un élément pour chaque utilisateur
     users.forEach((user) => {
         const contributorEl = document.createElement("a");
         contributorEl.href = user.html_url;
-        contributorEl.target = "_blank";  // Ouvre le profil dans un nouvel onglet
-        contributorEl.className = "block p-2 hover:bg-gray-200 rounded-md flex items-center gap-2";
+        contributorEl.target = "_blank";
+        contributorEl.rel = "noopener noreferrer";
+        contributorEl.className = "flex flex-col items-center p-3 hover:bg-gray-200 rounded-lg transition-colors duration-200";
 
         contributorEl.innerHTML = `
-            <img src="${user.avatar_url}" alt="${user.login}" class="w-8 h-8 rounded-full">
-            <span>${user.name || "Nom inconnu"} (@${user.login})</span>
+            <img src="${user.avatar_url}" alt="${user.login}" class="w-16 h-16 rounded-full mb-2 border-2 border-gray-300">
+            <span class="font-medium text-lg">${user.name || user.login}</span>
+            <span class="text-sm text-gray-600">@${user.login}</span>
         `;
 
         container.appendChild(contributorEl);

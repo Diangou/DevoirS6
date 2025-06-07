@@ -731,3 +731,22 @@ footer img {
     max-height: 50px;
     object-fit: contain;
 }
+
+/* Contributor styles */
+#contributors a {
+    transform: translateY(0);
+    transition: all 0.2s ease-in-out;
+}
+
+#contributors a:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+#contributors img {
+    transition: all 0.2s ease-in-out;
+}
+
+#contributors a:hover img {
+    border-color: #4F46E5;
+}
