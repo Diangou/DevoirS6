@@ -44,5 +44,7 @@ export default defineConfig({
         ],
         environment: 'happy-dom',
         css: false,
+        reporters: ['html'],
+        outputFile: './vitest-report/index.html'
     },
 });
