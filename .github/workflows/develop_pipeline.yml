@@ -50,4 +50,4 @@ jobs:
         run: scp -r ./* ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/deploy/${GITHUB_REF##*/}
 
       - name: Display deployed branch
-        run: echo "Deployed branch: ${GITHUB_REF##*/}"
+        run: echo "Deployed branch: ${{GITHUB_REF##*/}}"
