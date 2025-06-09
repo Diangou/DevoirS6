@@ -20,7 +20,7 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           
       - name: Créer le dossier 'develop' sur le serveur distant
-        run: ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "mkdir -p /var/www/develop"
+        run: ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_ed25519 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "mkdir -p /var/www/develop"
 
       - name: Copier les fichiers sur le serveur distant
         run: scp -i ~/.ssh/id_ed25519 -r ./* ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/develop
