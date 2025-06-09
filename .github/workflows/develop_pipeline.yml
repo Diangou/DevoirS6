@@ -31,11 +31,6 @@ jobs:
       - name: Run Unit Tests
         run: npm run test
 
-      - name: Run End-to-End Tests
-        needs: [unit_tests]
-        timeout-minutes: 45
-        continue-on-error: true  
-
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
