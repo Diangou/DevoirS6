@@ -18,6 +18,9 @@ jobs:
         run : |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa && chmod 600 ~/.ssh/id_rsa
+        uses: actions/checkout@v3Add commentMore action
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }} > ~/.ssh/id_rsa && chmod 600 ~/.ssh/id_rsa
 
       - name: Créer le dossier 'develop' sur le serveur distant
         run: ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "mkdir -p /var/www/develop"
