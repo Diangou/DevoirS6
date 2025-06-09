@@ -44,10 +44,10 @@ jobs:
           ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
       - name: Create 'develop' folder on server
-        run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "mkdir -p /var/www/deploy/${GITHUB_REF##*/}"
+        run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "mkdir -p /var/www/deploy/${{github.ref_name}}"
 
       - name: Deploy to server
-        run: scp -r ./* ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/deploy/${GITHUB_REF##*/}
+        run: scp -r ./* ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/deploy/${{github.ref_name}}
 
       - name: Display deployed branch
-        run: echo "Deployed branch: ${{GITHUB_REF##*/}}"
+        run: echo "Deployed branch ${{ github.ref_name }}"
