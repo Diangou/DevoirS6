@@ -1,4 +1,3 @@
-
 name: Deploy Develop Branch
 
 on:
@@ -14,21 +13,18 @@ jobs:
       - name: Cloner le dépôt
         uses: actions/checkout@v3
 
-      - name: SSH agent
+      - name: Préparer l'accès SSH
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa && chmod 600 ~/.ssh/id_rsa
-
-      - name: Set up SSH agent
-        uses: actions/checkout@v3Add commentMore action
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }} > ~/.ssh/id_rsa && chmod 600 ~/.ssh/id_rsa
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
       - name: Créer le dossier 'develop' sur le serveur distant
-        run: ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "mkdir -p /var/www/develop"
+        run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "mkdir -p /var/www/develop"
 
       - name: Copier les fichiers sur le serveur distant
-        run: scp -r ./ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/var/www/develop
+        run: scp -r ./* ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/develop
 
       - name: Installer les dépendances
         run: npm install
@@ -46,4 +42,6 @@ jobs:
         run: npm run migrate
 
       - name: Afficher la branche déployée
-        run: echo "${{ github.ref_name }}" > deployed_branch.txt && scp deployed_branch.txt ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/var/www/develop/version.txt
+        run: |
+          echo "${{ github.ref_name }}" > deployed_branch.txt
+          scp deployed_branch.txt ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/develop/version.txt
