@@ -73,7 +73,6 @@ app.listen(3000, () => {
 app.get("/list-jaquettes", async (req, res) => {
   try {
     const bucketName = "jaquettes";
-
     const { data: folders, error: listError } = await supabase.storage.from(bucketName).list("", {
       limit: 100,
     });
@@ -85,7 +84,6 @@ app.get("/list-jaquettes", async (req, res) => {
     const allFiles = [];
 
     for (const folder of folders) {
-      // On vérifie que c’est un dossier (pas un fichier avec une extension)
       if (folder.name && !folder.name.includes(".")) {
         const { data: filesInFolder, error: folderError } = await supabase.storage.from(bucketName).list(folder.name);
 
@@ -97,8 +95,9 @@ app.get("/list-jaquettes", async (req, res) => {
         for (const file of filesInFolder) {
           const filePath = `${folder.name}/${file.name}`;
           const { data: urlData } = supabase.storage.from(bucketName).getPublicUrl(filePath);
+
           allFiles.push({
-            name: file.name,
+            name: folder.name, // <= correspond à version.name de la pokeAPI
             url: urlData.publicUrl,
           });
         }
@@ -111,5 +110,3 @@ app.get("/list-jaquettes", async (req, res) => {
     res.status(500).json({ error: "Erreur serveur" });
   }
 });
-
-
