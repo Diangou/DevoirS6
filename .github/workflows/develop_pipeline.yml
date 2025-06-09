@@ -23,10 +23,10 @@ jobs:
           ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
           
       - name: Créer le dossier 'develop' sur le serveur distant
-        run: ssh -i ~/.ssh/id ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "mkdir -p /var/www/develop"
+        run: ssh -i ~/.ssh/id_ed25519 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "mkdir -p /var/www/develop"
 
       - name: Copier les fichiers sur le serveur distant
-        run: scp -i ~/.ssh/id -r ./* ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/develop
+        run: scp -i ~/.ssh/id_ed25519-r ./* ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/develop
 
       - name: Installer les dépendances
         run: npm install
@@ -46,4 +46,4 @@ jobs:
       - name: Afficher la branche déployée
         run: |
           echo "${{ github.ref_name }}" > deployed_branch.txt
-          scp -i ~/.ssh/id deployed_branch.txt ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/develop/version.txt
+          scp -i ~/.ssh/id_ed25519 deployed_branch.txt ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/develop/version.txt
