@@ -42,3 +42,28 @@ axios.interceptors.response.use(async (response) => {
     }
 });
 
+/**
+ * Récupère dynamiquement tous les jeux contenant 'Pokémon' depuis PokéAPI (langue FR)
+ * et force le nom à commencer par "Pokémon ".
+ * @returns {Promise<string[]>} Liste des noms de jeux
+ */
+export async function fetchAllGames() {
+    const response = await axios.get("https://pokeapi.co/api/v2/version?limit=100");
+    const results = response.data.results;
+  
+    const allGames = [];
+  
+    for (const version of results) {
+      const detail = await axios.get(version.url);
+      const nameFR = detail.data.names.find(n => n.language.name === "fr");
+      if (nameFR) {
+        let name = nameFR.name;
+        if (!name.startsWith("Pokémon")) {
+          name = "Pokémon " + name;
+        }
+        allGames.push(name);
+      }
+    }
+  
+    return [...new Set(allGames)].sort();
+  }
