@@ -17,9 +17,9 @@ jobs:
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/key
-          chmod 600 ~/key
+          chmod 600 ~/.ssh/key
           eval "$(ssh-agent -s)"
-          ssh-add ~/key
+          ssh-add ~/.ssh/key
           ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
           
       - name: Créer le dossier 'develop' sur le serveur distant
