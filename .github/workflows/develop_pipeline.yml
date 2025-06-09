@@ -1,6 +1,15 @@
+
+name: Deploy Develop Branch
+
+on:
+  push:
+    branches:
+      - develop
+
 jobs:
-  deploy:
+  deploy-develop:
     runs-on: ubuntu-latest
+
     steps:
       - name: Cloner le dépôt
         uses: actions/checkout@v3
@@ -10,23 +19,26 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Créer le dossier sur le serveur
-        run: ssh user@serveur "mkdir -p /var/www/develop"
+      - name: Créer le dossier 'develop' sur le serveur distant
+        run: ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "mkdir -p /var/www/develop"
 
-      - name: Copier les fichiers du projet
-        run: scp -r ./mon-projet user@serveur:/var/www/develop
+      - name: Copier les fichiers sur le serveur distant
+        run: scp -r ./ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/var/www/develop
 
       - name: Installer les dépendances
         run: npm install
 
+      - name: Linter le code avec ESLint
+        run: npm run lint
+
       - name: Exécuter les tests unitaires
         run: npm run test:unit
 
-      - name: Lint du code avec ESLint
-        run: npm run lint
+      - name: Exécuter les tests E2E
+        run: npm run test:e2e
 
-      - name: Migrer la base de donnéesE
+      - name: Migrer la base de données
         run: npm run migrate
 
       - name: Afficher la branche déployée
-        run: echo ${{ github.ref_name }} > /var/www/develop/version.txt
+        run: echo "${{ github.ref_name }}" > deployed_branch.txt && scp deployed_branch.txt ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/var/www/develop/version.txt
