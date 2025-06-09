@@ -14,10 +14,12 @@ jobs:
       - name: Cloner le dépôt
         uses: actions/checkout@v3
 
-      - name: Set up SSH agent
+      - name: SSH agent
         run : |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa && chmod 600 ~/.ssh/id_rsa
+
+      - name: Set up SSH agent
         uses: actions/checkout@v3Add commentMore action
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }} > ~/.ssh/id_rsa && chmod 600 ~/.ssh/id_rsa
