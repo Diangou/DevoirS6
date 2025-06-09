@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Pokédex</title>
+    <link data-favicon rel="shortcut icon" href="/favicon.png" type="image/png">
+    <link href="../src/styles/main.css" rel="stylesheet">
+</head>
+
+<body>
+    <header class="py-2 bg-slate-900 text-white">
+        <div
+            class="mr-[max(env(safe-area-inset-right),_theme(space.3))] ml-[max(env(safe-area-inset-left),_theme(space.3))]">
+            <div class="flex flex-row justify-between mx-auto max-w-6xl">
+                <h1> <a class="px-6 rounded-lg hover:bg-gray-600" href="index.html">Admin Pokédex</a></h1>
+                <a class="px-6 rounded-lg hover:bg-gray-600" href="../">Retourner à l'accueil</a>
+            </div>
+        </div>
+    </header>
+    <main>
+        <div class="py-6 mx-auto max-w-6xl flex justify-center font-bold">
+            <div>
+                <h2 class="text-3xl">
+                    Ajouter une nouvelle jaquette
+                </h2>
+            </div>
+        </div>
+
+        <div class="py-6 mx-auto max-w-6xl flex justify-center font-bold">
+
+            <form class="w-full max-w-lg">
+                <div class="flex flex-wrap ">
+                    <div class="w-full px-3">
+                        <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
+                            for="grid-state">
+                            Sélectionner un jeu :
+                        </label>
+                        <div class="relative">
+                            <select id="gameSelect"
+                                class="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500">
+                                <option value="">-- Choisir un jeu --</option>
+                            </select>
+                            <div
+                                class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 20 20">
+                                    <path
+                                        d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                                </svg>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="w-full px-3 py-6">
+                        <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">
+                            Fichier de jaquette :
+                            <input type="file" id="coverInput" accept="image/*"
+                                class="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none hover:bg-white focus:border-gray-500">
+                        </label>
+                    </div>
+
+                    <div class="w-full px-3 py-3 ">
+                        <button type="submit" class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">
+                            Uploader
+                        </button>
+                    </div>
+
+
+                </div>
+            </form>
+    </main>
+
+    <script type="module">
+        import { fetchAllGames } from '#src/api/utils.js';
+
+        const select = document.getElementById('gameSelect');
+
+        fetchAllGames().then(games => {
+            games.forEach(game => {
+                const option = document.createElement('option');
+                option.value = game;
+                option.textContent = game;
+                select.appendChild(option);
+            });
+        }).catch(err => {
+            console.error("Erreur lors du chargement des jeux :", err);
+        });
+    </script>
+
+
+
+    <script>
+        function sanitizeFilename(name) {
+            return name
+                .normalize('NFD')
+                .replace(/[̀-ͯ]/g, '')
+                .replace(/[^a-zA-Z0-9]/g, '-')
+                .replace(/-+/g, '-')
+                .toLowerCase();
+        }
+
+        document.getElementById('uploadForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const game = document.getElementById('gameSelect').value;
+            const fileInput = document.getElementById('coverInput');
+            const file = fileInput.files[0];
+
+            if (!game || !file) {
+                alert('Veuillez sélectionner un jeu et un fichier.');
+                return;
+            }
+
+            const extension = file.name.split('.').pop();
+            const sanitizedName = sanitizeFilename(game) + '.' + extension;
+
+            const renamedFile = new File([file], sanitizedName, { type: file.type });
+
+            const formData = new FormData();
+            formData.append('file', renamedFile);
+            formData.append('game', game);
+
+            try {
+                const response = await fetch('/api/upload-cover', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    alert('Jaquette envoyée avec succès !');
+                } else {
+                    alert("Erreur lors de l'envoi");
+                }
+            } catch (error) {
+                alert('Erreur réseau : ' + error.message);
+            }
+        });
+    </script>
+
+</body>
+
+</html>
