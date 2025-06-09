@@ -6,16 +6,10 @@ const form = document.getElementById("uploadForm");
 const toggleBtn = document.getElementById("toggleFormBtn");
 const select = document.getElementById("gameSelect");
 const jaquetteList = document.getElementById("jaquetteList");
-const tableContainer = document.getElementById("tableContainer");
-const toggleTableBtn = document.getElementById("toggleFormBtn2");
 
 // Toggle affichage du formulaire
 toggleBtn.addEventListener("click", () => {
   form.classList.toggle("hidden");
-});
-
-toggleTableBtn.addEventListener("click", () => {
-    tableContainer.classList.toggle("hidden");
 });
 
 // Remplir la liste des jeux
