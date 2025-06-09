@@ -4,47 +4,58 @@ on:
   push:
     branches:
       - develop
+  workflow_dispatch:
+
 
 jobs:
   deploy-develop:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Cloner le dépôt
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Préparer l'accès SSH
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
         run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/key
-          chmod 600 ~/.ssh/key
-          eval "$(ssh-agent -s)"
-          ssh-add ~/.ssh/key
-          ssh-add -l
-          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
-          
-      - name: Créer le dossier 'develop' sur le serveur distant
-        run: ssh -i ~/.ssh/key ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "mkdir -p /var/www/develop"
+          npm install
+          npm install express multer @supabase/supabase-js cors dotenv
 
-      - name: Copier les fichiers sur le serveur distant
-        run: scp -i ~/.ssh/key -r ./* ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/develop
-
-      - name: Installer les dépendances
-        run: npm install
-
-      - name: Linter le code avec ESLint
+      - name: Lint with ESLint
         run: npm run lint
 
-      - name: Exécuter les tests unitaires
+      - name: Run unit tests
         run: npm run test:unit
 
-      - name: Exécuter les tests E2E
+      - name: Run end-to-end tests
         run: npm run test:e2e
 
-      - name: Migrer la base de données
-        run: npm run migrate
-
-      - name: Afficher la branche déployée
+      - name: Migrate database
         run: |
-          echo "${{ github.ref_name }}" > deployed_branch.txt
-          scp -i ~/.ssh/key deployed_branch.txt ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/develop/version.txt
+          if [ -f ./scripts/migrate.sh ]; then
+            bash ./scripts/migrate.sh
+          else
+            echo "No migration script found, skipping."
+          fi
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          eval "$(ssh-agent -s)"
+          ssh-add ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Create 'develop' folder on server
+        run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "mkdir -p /var/www/deploy/${GITHUB_REF##*/}"
+
+      - name: Deploy to server
+        run: scp -r ./* ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/deploy/${GITHUB_REF##*/}
+
+      - name: Display deployed branch
+        run: echo "Deployed branch: ${GITHUB_REF##*/}"
