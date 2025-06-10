@@ -34,6 +34,7 @@ const pkdexTemplateRaw = document.querySelector("[data-tpl-id='pokedex']");
 const generationShortcutTemplateRaw = document.querySelector("[data-tpl-id='generation-shortcut-link']");
 const marqueeTypeTextTemplateRaw = document.querySelector("[data-tpl-id='marquee-type-text']");
 const marqueeTypeContainerTemplateRaw = document.querySelector("[data-tpl-id='marquee-type-container']");
+const pkmnTypeBubbleTemplateRaw = document.querySelector("[data-tpl-id='pokemon-type-bubble']");
 
 const pokedexContainer = document.querySelector("[data-list-pokedex]");
 
@@ -94,7 +95,12 @@ const updatePokedexLayout = (_isGridLayout) => {
         item.classList.toggle("lg:grid-cols-6", _isGridLayout);
         item.classList.toggle("grid-cols-1", !_isGridLayout);
     });
-};
+    
+    Array.from(document.querySelectorAll("[data-pokemon-type-container]")).forEach((typeContainer) => {
+        typeContainer.classList.toggle("justify-end", !_isGridLayout);
+        typeContainer.classList.toggle("ml-auto", !_isGridLayout);
+    });
+}
 
 updatePokedexLayout(isGridLayout);
 
@@ -285,9 +291,32 @@ const loadPokedexForGeneration = async (generation = 1, triggerElement) => {
             aTag.style.scrollMargin = `${headerPokedex.offsetHeight}px`;
             aTag.dataset.pokemonData = JSON.stringify(item);
             aTag.dataset.pokemonId = item.pokedex_id;
-            aTag.classList.add(...[
+            aTag.classList.add(
                 typesAnimatedBorderColor[`${cleanString(item.types[0].name)}_${cleanString(item.types[1]?.name || item.types?.[0].name)}`]
-            ]);
+            );
+
+            const typesList = document.createElement('ul');
+            typesList.classList.add('flex', 'gap-1', 'mt-1', 'types-list');
+            typesList.setAttribute('data-types-list', '');
+
+            item.types.forEach((type) => {
+                const typeBubble = document.importNode(pkmnTypeBubbleTemplateRaw.content, true);
+                const li = typeBubble.querySelector('li');
+                const typeSpan = typeBubble.querySelector('span');
+                const typeImg = typeBubble.querySelector('img');
+                
+                li.style.backgroundColor = `var(--type-${cleanString(type.name)})`;
+                li.setAttribute('aria-label', `Type ${type.name}`);
+                typeSpan.textContent = type.name;
+                
+                typeImg.alt = `icône type ${type.name}`;
+                replaceImage(typeImg, type.image);
+                
+                typesList.appendChild(typeBubble);
+            });
+
+            aTag.appendChild(typesList);
+
             aTag.addEventListener("click", loadDetailsModal);
             aTag.addEventListener("mouseover", generateMarqueeTypes);
             aTag.addEventListener("focus", generateMarqueeTypes);
@@ -350,6 +379,7 @@ const loadPokedexForGeneration = async (generation = 1, triggerElement) => {
 const urlParams = new URLSearchParams(window.location.search);
 const pkmnId = urlParams.get("id");
 
+//easter egg ;)
 export const observeURL = async () => {
     if (pkmnId !== null) {
         try {
@@ -470,3 +500,44 @@ window.addEventListener("offline", () => {
 
 
 export { loadPokedexForGeneration };
+
+// Fonctionnalité de cyclage des logos
+const cyLogo = document.getElementById('cy-logo');
+const cycleLogo = document.getElementById('cycle-logo');
+
+const cyLogos = [
+    '/images/CY Cergy Paris Universite_coul.png',
+    '/images/CY Cergy Paris Universite_Noir.png',
+    '/images/CY IUT_coul.png',
+    '/images/CY IUT_hachures_Noir.png'
+];
+
+let currentLogoIndex = 0;
+
+// Gestion des erreurs
+const handleLogoError = (event) => {
+    console.error(`Failed to load logo: ${event.target.src}`);
+    // Retour à la première image qui fonctionne
+    event.target.src = cyLogos[0];
+    currentLogoIndex = 0;
+};
+
+// Ajout de l'écouteur d'erreur à l'élément logo
+cyLogo.addEventListener('error', handleLogoError);
+
+cycleLogo.addEventListener('click', () => {
+    currentLogoIndex = (currentLogoIndex + 1) % cyLogos.length;
+    // Utilisation de encodeURI pour gérer les espaces et les caractères spéciaux dans les noms de fichiers
+    cyLogo.src = encodeURI(cyLogos[currentLogoIndex]);
+    
+    // Ajout d'un effet de fade simple
+    cyLogo.classList.add('opacity-0');
+    setTimeout(() => {
+        cyLogo.classList.remove('opacity-0');
+    }, 50);
+    
+    console.log(`Loading logo: ${cyLogos[currentLogoIndex]}`);
+});
+
+// Ajoute une transition pour l'effet de fade
+cyLogo.classList.add('transition-opacity', 'duration-300');

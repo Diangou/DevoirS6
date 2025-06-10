@@ -7,6 +7,7 @@ import {
     fetchPokemon,
     fetchEvolutionChain,
     fetchAbilityData,
+    fetchGameCovers
 } from "#api";
 
 import {
@@ -270,6 +271,38 @@ const loadDetailsModal = async (e, region = null) => {
     history.pushState({}, "", url);
     displayModal(pkmnData);
 };
+
+const gameCoverModal = document.querySelector("[data-game-cover-modal]");
+const gameCoverImage = document.querySelector("[data-game-cover-image]");
+const closeGameCoverButton = document.querySelector("[data-close-game-cover-modal]");
+
+// Fermer la modale des jaquettes en cliquant sur le bouton de fermeture
+closeGameCoverButton?.addEventListener("click", () => {
+    gameCoverModal.close();
+});
+
+// Fermer la modale des jaquettes en cliquant à l'extérieur
+gameCoverModal?.addEventListener("click", (e) => {
+    if (e.target === gameCoverModal) {
+        gameCoverModal.close();
+    }
+});
+
+// Ajouter la navigation au clavier pour la modale des jaquettes
+gameCoverModal?.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+        gameCoverModal.close();
+    }
+});
+
+// S'assurer que le focus retourne à l'image cliquée lors de la fermeture de la modale
+gameCoverModal?.addEventListener("close", () => {
+    const lastFocusedImage = document.querySelector("[data-last-focused-game-cover]");
+    if (lastFocusedImage) {
+        lastFocusedImage.focus();
+        lastFocusedImage.removeAttribute("data-last-focused-game-cover");
+    }
+});
 
 displayModal = async (pkmnData) => {
     modal.inert = true;
@@ -773,13 +806,72 @@ displayModal = async (pkmnData) => {
         .map((item) => ({ ...item, order: Object.keys(getVersionForName).findIndex((game) => item.version.name === game) }))
         .sort((a, b) => Number(a.order) - Number(b.order));
 
+    // Récupérer les jaquettes de jeux
+    const gameCovers = await fetchGameCovers();
+
     listGames.forEach((item) => {
         const li = document.createElement("li");
         const versionName = getVersionForName[item.version.name] || "Unknown";
-        li.textContent = versionName;
+        
+        // Trouver la jaquette correspondante
+        const gameCover = gameCovers.find(cover => cover.name.toLowerCase() === item.version.name.toLowerCase());
+        
+        if (gameCover) {
+            // Créer le conteneur pour l'image et la légende
+            const container = document.createElement("div");
+            container.classList.add("flex", "flex-col", "items-center", "gap-2");
+
+            // Créer l'élément image pour la jaquette
+            const img = document.createElement("img");
+            img.src = gameCover.url;
+            img.alt = `Jaquette de ${versionName}`;
+            img.classList.add(
+                "w-full", 
+                "h-40", 
+                "object-contain", 
+                "rounded-lg", 
+                "shadow-md", 
+                "hover:scale-105", 
+                "transition-all", 
+                "cursor-pointer",
+                "bg-white",
+                "p-2"
+            );
+            img.tabIndex = 0;
+
+            // Ajouter la légende
+            const caption = document.createElement("span");
+            caption.textContent = versionName;
+            caption.classList.add("text-sm", "text-center", "font-medium");
+            
+            // Ajouter le gestionnaire de clic pour afficher la version agrandie
+            const showGameCover = () => {
+                img.setAttribute("data-last-focused-game-cover", "true");
+                gameCoverImage.src = gameCover.url;
+                gameCoverImage.alt = `Jaquette de ${versionName}`;
+                gameCoverModal.showModal();
+            };
+            
+            img.addEventListener("click", showGameCover);
+            img.addEventListener("keydown", (e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    showGameCover();
+                }
+            });
+            
+            container.appendChild(img);
+            container.appendChild(caption);
+            li.appendChild(container);
+        } else {
+            // Utiliser le texte si aucune jaquette n'est trouvée
+            li.textContent = versionName;
+            li.classList.add("flex", "items-center", "justify-center", "h-40", "bg-white", "rounded-lg", "shadow-md", "p-2");
+        }
 
         modal_DOM.listGames.append(li);
     });
+
     modal_DOM.nbGames.textContent = ` (${listGames.length})`;
     modal_DOM.listGames.closest("details").inert = listGames.length === 0;
 
