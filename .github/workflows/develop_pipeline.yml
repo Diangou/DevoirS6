@@ -29,9 +29,9 @@ jobs:
     
       - name: Deploy to server
         run: |
-          ssh user@your-server "mkdir -p $DEPLOY_DIR"
-          rsync -avz --delete ./dist/ user@your-server:$DEPLOY_DIR
+          ssh ${{secrets.SSH_USER}}@${{secrets.SSH_HOST}} "mkdir -p $DEPLOY_DIR"
+          rsync -avz --delete ./dist/ ${{secrets.SSH_USER}}@${{secrets.SSH_HOST}}$DEPLOY_DIR
 
       - name: Display deployed branch on site
-        run: echo "${{ github.ref_name }}" > deployed-branch.txt && rsync deployed-branch.txt user@your-server:$DEPLOY_DIR/
+        run: echo "${{ github.ref_name }}" > deployed-branch.txt && rsync deployed-branch.txt ${{secrets.SSH_USER}}@${{secrets.SSH_HOST}}:$DEPLOY_DIR/
 
