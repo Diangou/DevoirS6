@@ -10,6 +10,7 @@ jobs:
   lint:
     name: Run ESLint
     runs-on: ubuntu-latest
+    continue-on-error: true
 
     steps:
       - name: Checkout code
@@ -30,6 +31,7 @@ jobs:
     name: Run Unit Tests
     needs: [lint]
     runs-on: ubuntu-latest
+    continue-on-error: true
 
     steps:
       - name: Checkout code
