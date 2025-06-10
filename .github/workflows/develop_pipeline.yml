@@ -1,4 +1,4 @@
-name: Deploy Develop Branch
+name: CI for develop branch
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy-develop:
+  build-and-test:
     runs-on: ubuntu-latest
 
     steps:
@@ -20,32 +20,17 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies
-        run: |
-          npm install
-          npm install express multer @supabase/supabase-js cors dotenv
+        run: npm install
 
-      - name: Lint with ESLint
+      - name: Lint code with ESLint
         run: npm run lint
-        continue-on-error: true
+        continue-on-error: true  # si tu veux que ça ne bloque pas
 
-      - name: Run Unit Tests
-        run: npm run test
-        continue-on-error: true
+      - name: Run unit tests
+        run: npm run test:unit
 
-      - name: Setup SSH
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          eval "$(ssh-agent -s)"
-          ssh-add ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+      - name: Run e2e tests
+        run: npm run test:e2e
 
-      - name: Create 'develop' folder on server
-        run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "mkdir -p /var/www/deploy/${{github.ref_name}}"
-
-      - name: Deploy to server
-        run: scp -r ./* ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/deploy/${{github.ref_name}}
-
-      - name: Display deployed branch
-        run: echo "Deployed branch ${{ github.ref_name }}"
+      - name: Show deployed branch info
+        run: echo "Branch deployed: ${{ github.ref_name }}"
