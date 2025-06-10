@@ -1,5 +1,7 @@
 import { games } from "../utils/index.js";
 import axios from "axios";
+import axios from "https://cdn.jsdelivr.net/npm/axios@1.6.8/dist/axios.min.js";
+
 
 // Formulaire & bouton
 const form = document.getElementById("uploadForm");
