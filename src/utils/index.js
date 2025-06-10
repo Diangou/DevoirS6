@@ -36,6 +36,11 @@ export const getVersionForName = {
     "legends-arceus": "Légendes Pokémon : Arceus",
 };
 
+export const games = Object.entries(getVersionForName).map(([name, label]) => ({
+  name,
+  label
+}));
+
 export const cleanString = (string) =>
     string
         .toLowerCase()
