@@ -64,11 +64,11 @@ jobs:
       - name: Deploy Application to Develop Folder
         env:
           BRANCH_NAME: ${{ github.ref_name }} # Nom de la branche
-          DEPLOY_PATH: "/var/www/develop/${{ github.ref_name }}"
+          DEPLOY_PATH: '/var/www/develop/${{ github.ref_name }}'
         run: |
           echo "Deploying branch $BRANCH_NAME"
           mkdir -p "$DEPLOY_PATH" # Crée un dossier pour la branche
-          cp -r ./* "$DEPLOY_PATH" # Copie les fichiers dans le dossier
+          cp -r . "$DEPLOY_PATH" # Copie les fichiers dans le dossier
 
       - name: Display Deployed Branch
         run: echo "Deployed branch: ${{ github.ref_name }}"
