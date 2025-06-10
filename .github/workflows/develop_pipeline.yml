@@ -1,14 +1,18 @@
-name: Deploy Develop Branch
+name: Deploy Develop
 
 on:
   push:
     branches:
       - develop
-  workflow_dispatch:
 
 jobs:
-  deploy-develop:
+  build-deploy:
     runs-on: ubuntu-latest
+
+    env:
+      NODE_ENV: development
+      DEPLOY_DIR: "/var/www/html/${{ github.ref_name }}" # crée un dossier selon la branche
+      TOKEN: ${{ secrets.DEVOIRS6_TOKEN }} # À stocker dans GitHub Secrets
 
     steps:
       - name: Checkout code
@@ -17,35 +21,34 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: 18
 
       - name: Install dependencies
+        run: npm install
+
+      - name: Run ESLint
+        run: npx eslint . --ext .js,.jsx,.ts,.tsx
+
+      - name: Run unit tests
+        run: npm run test:unit
+
+      - name: Run end-to-end tests
+        run: npm run test:e2e
+
+      - name: Migrate database
         run: |
-          npm install
-          npm install express multer @supabase/supabase-js cors dotenv
-
-      - name: Lint with ESLint
-        run: npm run lint
-        continue-on-error: true
-
-      - name: Run Unit Tests
-        run: npm run test
-        continue-on-error: true
-
-      - name: Setup SSH
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          eval "$(ssh-agent -s)"
-          ssh-add ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
-
-      - name: Create 'develop' folder on server
-        run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "mkdir -p /var/www/deploy/${{github.ref_name}}"
+          if [ -f "./scripts/migrate.sh" ]; then
+            chmod +x ./scripts/migrate.sh
+            ./scripts/migrate.sh
+          else
+            echo "No migration script found, skipping."
+          fi
 
       - name: Deploy to server
-        run: scp -r ./* ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/deploy/${{github.ref_name}}
+        run: |
+          ssh user@your-server "mkdir -p $DEPLOY_DIR"
+          rsync -avz --delete ./dist/ user@your-server:$DEPLOY_DIR
 
-      - name: Display deployed branch
-        run: echo "Deployed branch ${{ github.ref_name }}"
+      - name: Display deployed branch on site
+        run: echo "${{ github.ref_name }}" > deployed-branch.txt && rsync deployed-branch.txt user@your-server:$DEPLOY_DIR/
+
