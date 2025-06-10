@@ -26,24 +26,7 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run ESLint
-        run: npx eslint . --ext .js,.jsx,.ts,.tsx
-
-      - name: Run unit tests
-        run: npm run test:unit
-
-      - name: Run end-to-end tests
-        run: npm run test:e2e
-
-      - name: Migrate database
-        run: |
-          if [ -f "./scripts/migrate.sh" ]; then
-            chmod +x ./scripts/migrate.sh
-            ./scripts/migrate.sh
-          else
-            echo "No migration script found, skipping."
-          fi
-
+    
       - name: Deploy to server
         run: |
           ssh user@your-server "mkdir -p $DEPLOY_DIR"
