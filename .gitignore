@@ -1,6 +1,9 @@
 # .gitignore
 src/config.js
 
+# Rapport HTML Vitest
+vitest-report/
+
 # Logs
 logs
 *.log
