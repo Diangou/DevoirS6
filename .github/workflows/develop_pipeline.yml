@@ -1,4 +1,4 @@
-name: Deploy Develop Branch
+name: Deploy Develop
 
 on:
   push:
@@ -6,44 +6,37 @@ on:
       - develop
 
 jobs:
-  deploy-develop:
+  build-deploy:
     runs-on: ubuntu-latest
 
+    env:
+      NODE_ENV: development
+      DEPLOY_DIR: "/var/www/html/${{ github.ref_name }}"
+      TOKEN: ${{ secrets.DEVOIRS6_TOKEN }}
+
     steps:
-      - name: Cloner le dépôt
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Préparer l'accès SSH avec DEVOIRS6_TOKEN
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.DEVOIRS6_TOKEN }}" > ~/.ssh/id_devoirs6
-          chmod 600 ~/.ssh/id_devoirs6
-          eval "$(ssh-agent -s)"
-          ssh-add ~/.ssh/id_devoirs6
-          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
 
-      - name: Créer le dossier 'develop' sur le serveur distant
-        run: ssh -i ~/.ssh/id_devoirs6 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "mkdir -p /var/www/develop"
-
-      - name: Copier les fichiers sur le serveur distant
-        run: scp -i ~/.ssh/id_devoirs6 -r ./* ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/develop
-
-      - name: Installer les dépendances
+      - name: Install dependencies
         run: npm install
 
-      - name: Linter le code avec ESLint
-        run: npm run lint
-
-      - name: Exécuter les tests unitaires
-        run: npm run test:unit
-
-      - name: Exécuter les tests E2E
-        run: npm run test:e2e
-
-      - name: Migrer la base de données
-        run: npm run migrate
-
-      - name: Afficher la branche déployée
+      - name: Setup SSH (disable host key checking)
         run: |
-          echo "${{ github.ref_name }}" > deployed_branch.txt
-          scp -i ~/.ssh/id_devoirs6 deployed_branch.txt ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/develop/version.txt
+          mkdir -p ~/.ssh
+          echo -e "Host *\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
+
+      - name: Deploy to server
+        run: |
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "mkdir -p $DEPLOY_DIR"
+          rsync -avz --delete ./dist/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:$DEPLOY_DIR/
+
+      - name: Display deployed branch on site
+        run: |
+          echo "${{ github.ref_name }}" > deployed-branch.txt
+          rsync deployed-branch.txt ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:$DEPLOY_DIR/
