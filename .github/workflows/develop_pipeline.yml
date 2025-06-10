@@ -1,44 +1,50 @@
-
 name: Deploy Develop Branch
 
 on:
   push:
     branches:
       - develop
+  workflow_dispatch:
+
 
 jobs:
   deploy-develop:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Cloner le dépôt
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up SSH agent
-        uses: webfactory/ssh-agent@v0.5.4
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          node-version: '18'
 
-      - name: Créer le dossier 'develop' sur le serveur distant
-        run: ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "mkdir -p /var/www/develop"
+      - name: Install dependencies
+        run: |
+          npm install
+          npm install express multer @supabase/supabase-js cors dotenv
 
-      - name: Copier les fichiers sur le serveur distant
-        run: scp -r ./ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/var/www/develop
-
-      - name: Installer les dépendances
-        run: npm install
-
-      - name: Linter le code avec ESLint
+      - name: Lint with ESLint
         run: npm run lint
 
-      - name: Exécuter les tests unitaires
-        run: npm run test:unit
+      - name: Run Unit Tests
+        run: npm run test
 
-      - name: Exécuter les tests E2E
-        run: npm run test:e2e
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          eval "$(ssh-agent -s)"
+          ssh-add ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Migrer la base de données
-        run: npm run migrate
+      - name: Create 'develop' folder on server
+        run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "mkdir -p /var/www/deploy/${{github.ref_name}}"
 
-      - name: Afficher la branche déployée
-        run: echo "${{ github.ref_name }}" > deployed_branch.txt && scp deployed_branch.txt ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/var/www/develop/version.txt
+      - name: Deploy to server
+        run: scp -r ./* ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/deploy/${{github.ref_name}}
+
+      - name: Display deployed branch
+        run: echo "Deployed branch ${{ github.ref_name }}"
