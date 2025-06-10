@@ -49,6 +49,7 @@ jobs:
   deploy:
     name: Deploy to Vercel
     runs-on: ubuntu-latest
+    needs: [e2e_tests]
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4
@@ -56,11 +57,24 @@ jobs:
       - name: Write branch name to public/branch.txt
         run: echo "${GITHUB_REF##*/}" > public/branch.txt
 
-      - name: Deploy to Vercel
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build with Vercel CLI
+        run: npx vercel build
+
+      - name: Deploy to Vercel with Prebuilt Output
         uses: amondnet/vercel-action@v25
         with:
           vercel-token: ${{ secrets.DEVOIRS6_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           vercel-args: '--prebuilt'
-          vercel-branch: develop
