@@ -7,6 +7,21 @@ on:
   workflow_dispatch: # Permet de déclencher manuellement la pipeline
 
 jobs:
+  lint:
+    name: Lint Code with ESLint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install
+
   deploy:
     name: Deploy to Develop Folder
     runs-on: ubuntu-latest
