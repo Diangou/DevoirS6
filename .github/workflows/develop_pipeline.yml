@@ -1,37 +1,111 @@
-name: CI for develop branch
+name: CI/CD Pipeline for Develop
 
 on:
   push:
     branches:
       - develop
-  workflow_dispatch:
-
+  workflow_dispatch: # Permet de déclencher manuellement la pipeline
 
 jobs:
-  build-and-test:
+  lint:
+    name: Lint Code with ESLint
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Setup Node.js
+      - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: 18
 
       - name: Install dependencies
         run: npm install
 
-      - name: Lint code with ESLint
+      - name: Run ESLint
         run: npm run lint
-        continue-on-error: true  # si tu veux que ça ne bloque pas
 
-      - name: Run unit tests
-        run: npm run test:unit
+  unit-tests:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - name: Run e2e tests
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run Unit Tests
+        run: npm test
+
+  e2e-tests:
+    name: Run E2E Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Start Application
+        run: npm run start & # Démarre l'application en arrière-plan
+
+      - name: Run E2E Tests
         run: npm run test:e2e
 
-      - name: Show deployed branch info
-        run: echo "Branch deployed: ${{ github.ref_name }}"
+  migrate-db:
+    name: Migrate Database
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run Database Migrations
+        run: npm run migrate
+
+  deploy:
+    name: Deploy to Develop Folder
+    runs-on: ubuntu-latest
+    needs: [lint, unit-tests, e2e-tests, migrate-db]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Deploy Application to Develop Folder
+        env:
+          BRANCH_NAME: ${{ github.ref_name }} # Nom de la branche
+        run: |
+          echo "Deploying branch $BRANCH_NAME"
+          mkdir -p /var/www/develop/$BRANCH_NAME # Crée un dossier pour la branche
+          cp -r * /var/www/develop/$BRANCH_NAME # Copie les fichiers dans le dossier
+
+      - name: Display Deployed Branch
+        run: |
+          echo "Deployed branch: ${{ github.ref_name }}"
