@@ -47,25 +47,20 @@ jobs:
       - run: npx playwright test --project=chromium --grep-invert @smoke
 
   deploy:
-    name: Deploy to custom server
+    name: Deploy to Vercel
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4
 
-      - name: Deploy via SSH
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
-          REMOTE_USER: ${{ secrets.REMOTE_USER }}
-        run: |
-          eval "$(ssh-agent -s)"
-          echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
-          mkdir -p ~/.ssh
-          ssh-keyscan -H $REMOTE_HOST >> ~/.ssh/known_hosts
-          BRANCH=${GITHUB_REF##*/}
-          ssh $REMOTE_USER@$REMOTE_HOST "mkdir -p ~/deployments/$BRANCH && rm -rf ~/deployments/$BRANCH/*"
-          rsync -avz --exclude=node_modules --exclude=.git ./ $REMOTE_USER@$REMOTE_HOST:~/deployments/$BRANCH/
+      - name: Write branch name to public/branch.txt
+        run: echo "${GITHUB_REF##*/}" > public/branch.txt
 
-      - name: Show Deployed Branch Info
-        run: echo "Branch '${GITHUB_REF##*/}' deployed"
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.DEVOIRS6_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prebuilt'
+          vercel-branch: develop
